@@ -1,10 +1,14 @@
 package main
 
 import (
+	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"rfs/handler/minehandler"
 	"rfs/models/entity"
 	"rfs/models/modelconst"
+	"time"
 )
 
 type MinerHandler struct{}
@@ -21,12 +25,23 @@ func main() {
 
 	minehandler := minehandler.NewMinerHandler()
 
-	minehandler.AddNewOperation(entity.NewOperation("first.txt", modelconst.CREATE_FILE, nil))
+	func() {
+		time.Sleep(time.Minute)
+		minehandler.AddNewOperation(entity.NewOperation("first.txt", modelconst.CREATE_FILE, nil))
+	}()
 
-	minehandler.AddNewOperation(entity.NewOperation("first.txt", modelconst.APPEND_RECORD, []byte("Append please")))
+	func() {
+		time.Sleep(3 * time.Minute)
+		minehandler.AddNewOperation(entity.NewOperation("first.txt", modelconst.APPEND_RECORD, []byte("Append please")))
+	}()
 
-	minehandler.GenerateOpBlock()
-	minehandler.GenerateNoOpBlock()
+	interruptChan := make(chan os.Signal, 1)
+	signal.Notify(interruptChan, os.Interrupt)
+	signal.Notify(interruptChan, os.Kill)
+
+	sig := <-interruptChan
+
+	log.Println("Clossing ", sig)
 
 	// // a := time.Now()
 

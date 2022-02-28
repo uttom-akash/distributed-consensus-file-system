@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"rfs/secsuit"
 	"strconv"
 	"time"
 )
@@ -17,4 +18,19 @@ type Block struct {
 func (block *Block) String() string {
 	//Todo: Need to implement it appropriately
 	return block.PrevHash + block.TimeStamp.String() + strconv.Itoa(block.SerialNo)
+}
+
+func NewOpBlock(prevblock *Block, operations []*Operation) *Block {
+	return &Block{
+		PrevHash:   secsuit.ComputeHash(prevblock.String()),
+		Operations: operations,
+		TimeStamp:  time.Now(),
+	}
+}
+
+func NewNoOpBlock(prevblock *Block) *Block {
+	return &Block{
+		PrevHash:  secsuit.ComputeHash(prevblock.String()),
+		TimeStamp: time.Now(),
+	}
 }
