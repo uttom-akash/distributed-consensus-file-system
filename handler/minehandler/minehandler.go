@@ -1,6 +1,7 @@
 package minehandler
 
 import (
+	"context"
 	"rfs/handler/chainhandler"
 	"rfs/handler/operationhandler"
 	"rfs/models/entity"
@@ -36,43 +37,63 @@ func (minerHandler *MinerHandler) AddNewOperation(operation *entity.Operation) {
 
 func (minerHandler *MinerHandler) GenerateOpBlock() {
 
-	time.Sleep(3 * time.Second)
+	for {
 
-	newOperations := minerHandler.operationHandler.GetNewOperations()
+		time.Sleep(minerHandler.genOpBlockTimeout)
 
-	lastblock := minerHandler.chainhandler.GetLongestValidChain()
+		newOperations := minerHandler.operationHandler.GetNewOperations()
 
-	newOpBlock := &entity.Block{
-		PrevHash:   secsuit.ComputeHash(lastblock.String()),
-		Operations: newOperations,
-		TimeStamp:  time.Now(),
+		if len(newOperations) == 0 {
+			continue
+		}
+
+		minerHandler.cancelNoOpBlockGen <- 1
+
+		lastblock := minerHandler.chainhandler.GetLongestValidChain()
+
+		newOpBlock := &entity.Block{
+			PrevHash:   secsuit.ComputeHash(lastblock.String()),
+			Operations: newOperations,
+			TimeStamp:  time.Now(),
+		}
+
+		minerHandler.chainhandler.AddBlock(newOpBlock)
+
+		minerHandler.cancelNoOpBlockGen <- 2
 	}
-
-	minerHandler.chainhandler.AddBlock(newOpBlock)
-
-	// for {
-	// 	time.After(worker.genOpBlockTimeout)
-	// 	if len(worker.operations) == 0 {
-	// 		continue
-	// 	}
-	// 	worker.cancelNoOpBlockGen <- 1
-
-	// 	time.Sleep(time.Second)
-
-	// }
 }
 
-func (minerHandler *MinerHandler) GenerateNoOpBlock() {
+func (minerHandler *MinerHandler) GenerateNoOpBlock1() {
+	contxt, cancelFunc := context.WithCancel(context.TODO())
+	minerHandler.GenerateNoOpBlock(contxt)
 
-	time.Sleep(time.Second)
+	for {
+		msg := <-minerHandler.cancelNoOpBlockGen
+		if msg == 1 {
+			cancelFunc()
+		}
 
-	lastblock := minerHandler.chainhandler.GetLongestValidChain()
+		if msg == 2 {
+			contxt, cancelFunc = context.WithCancel(context.TODO())
+			minerHandler.GenerateNoOpBlock()
+		}
+	}
+}
 
-	newOpBlock := &entity.Block{PrevHash: secsuit.ComputeHash(lastblock.String())}
+func (minerHandler *MinerHandler) GenerateNoOpBlock(ctx context.Context) {
 
-	minerHandler.chainhandler.AddBlock(newOpBlock)
+	for {
+		time.Sleep(time.Second)
 
-	// for {
+		lastblock := minerHandler.chainhandler.GetLongestValidChain()
 
-	// }
+		newNoOpBlock := &entity.Block{PrevHash: secsuit.ComputeHash(lastblock.String())}
+
+		select {
+		case <-ctx.Done():
+			break
+		case:
+			minerHandler.chainhandler.AddBlock(newNoOpBlock)
+		}
+	}
 }

@@ -4,10 +4,12 @@ import (
 	"math"
 	"rfs/models/entity"
 	"rfs/secsuit"
+	"sync"
 )
 
 type ChainHandler struct {
-	chain *entity.BlockChain
+	locker sync.Mutex
+	chain  *entity.BlockChain
 }
 
 func NewChainHandler() *ChainHandler {
@@ -32,6 +34,9 @@ func (chainhandler *ChainHandler) GetLongestValidChain() *entity.Block {
 }
 
 func (chainhandler *ChainHandler) AddBlock(block *entity.Block) error {
+
+	chainhandler.locker.Lock()
+	defer chainhandler.locker.Unlock()
 
 	if !chainhandler.ValidateBlock(block) {
 		return nil
