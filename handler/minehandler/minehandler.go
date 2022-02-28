@@ -63,9 +63,9 @@ func (minerHandler *MinerHandler) GenerateOpBlock() {
 	}
 }
 
-func (minerHandler *MinerHandler) GenerateNoOpBlock1() {
+func (minerHandler *MinerHandler) GenerateNoOpBlock() {
 	contxt, cancelFunc := context.WithCancel(context.TODO())
-	minerHandler.GenerateNoOpBlock(contxt)
+	minerHandler.AddNoOpBlock(contxt)
 
 	for {
 		msg := <-minerHandler.cancelNoOpBlockGen
@@ -75,12 +75,12 @@ func (minerHandler *MinerHandler) GenerateNoOpBlock1() {
 
 		if msg == 2 {
 			contxt, cancelFunc = context.WithCancel(context.TODO())
-			minerHandler.GenerateNoOpBlock()
+			minerHandler.AddNoOpBlock(contxt)
 		}
 	}
 }
 
-func (minerHandler *MinerHandler) GenerateNoOpBlock(ctx context.Context) {
+func (minerHandler *MinerHandler) AddNoOpBlock(ctx context.Context) {
 
 	for {
 		time.Sleep(time.Second)
@@ -91,8 +91,8 @@ func (minerHandler *MinerHandler) GenerateNoOpBlock(ctx context.Context) {
 
 		select {
 		case <-ctx.Done():
-			break
-		case:
+			return
+		default:
 			minerHandler.chainhandler.AddBlock(newNoOpBlock)
 		}
 	}
