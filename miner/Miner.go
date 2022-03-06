@@ -1,8 +1,11 @@
 package miner
 
 import (
+	"log"
 	"net/http"
 	"rfs/bclib"
+	"rfs/config"
+	"time"
 )
 
 type MinerNetworkOperation interface {
@@ -37,18 +40,26 @@ type Miner interface {
 	MinerConnect
 }
 
-type MinerHandler struct{}
+type MinerHttp struct{}
 
 //Connect
-func (handler *MinerHandler) ListenPeerMiners() {
+func (handler *MinerHttp) ListenPeerMiners() {
+
+	log.Println("ListenPeerMiners")
+
+	config := config.GetSingletonConfigHandler()
+
+	rootHandler := http.NewServeMux()
+
+	rootHandler.Handle("/ping", NewPeerHandler())
 
 	bclib.HttpListen(http.Server{
-		Addr:    ":8080",
-		Handler: NewPeerHandler(),
+		Addr:    config.MinerConfig.IpAddress + ":" + config.MinerConfig.Port,
+		Handler: rootHandler,
 	})
 }
 
-func (handler *MinerHandler) ListenClients() {
+func (handler *MinerHttp) ListenClients() {
 
 	bclib.HttpListen(http.Server{
 		Addr:    ":8081",
@@ -57,8 +68,29 @@ func (handler *MinerHandler) ListenClients() {
 
 }
 
-func (handler *MinerHandler) ConnectPeerMiners() {
+func (handler *MinerHttp) ConnectPeerMiners() {
+	con := config.GetSingletonConfigHandler()
 
+	for {
+		for _, peerId := range con.MinerConfig.Peers {
+			log.Println("Connecting Peer : ", peerId)
+			peerconfig := config.GetConfig(peerId)
+			_, err := http.Get("http://" + peerconfig.IpAddress + ":" + peerconfig.Port + "/ping")
+
+			if err != nil {
+				log.Println("Error : pinging ", peerId, err)
+			}
+
+			log.Println("Ping success: ")
+
+			time.Sleep(3 * time.Second)
+		}
+	}
+
+}
+
+func NewMinerHttp() *MinerHttp {
+	return &MinerHttp{}
 }
 
 type PeerHandler struct{}
@@ -74,7 +106,7 @@ func NewPeerHandler() *PeerHandler {
 type ClientHandler struct{}
 
 func (handler *ClientHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-
+	rw.Write([]byte("pong!"))
 }
 
 func NewClientHandler() *ClientHandler {

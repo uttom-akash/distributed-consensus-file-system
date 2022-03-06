@@ -1,6 +1,7 @@
 package chainhandler
 
 import (
+	"fmt"
 	"math"
 	"rfs/models/entity"
 	"rfs/secsuit"
@@ -8,15 +9,38 @@ import (
 )
 
 type ChainHandler struct {
-	locker sync.Mutex
-	chain  *entity.BlockChain
+	chain        *entity.BlockChain
+	Addblockchan chan *entity.Block
 }
 
 func NewChainHandler() *ChainHandler {
 
 	return &ChainHandler{
-		chain: entity.NewBlockchain(),
+		chain:        entity.NewBlockchain(),
+		Addblockchan: make(chan *entity.Block, 2),
 	}
+}
+
+var lock = &sync.Mutex{}
+var chainhandlerInstance *ChainHandler
+
+func NewSingletonChainHandler() *ChainHandler {
+
+	if chainhandlerInstance == nil {
+		lock.Lock()
+		defer lock.Unlock()
+
+		if chainhandlerInstance == nil {
+			fmt.Println("Creating single instance now.")
+			chainhandlerInstance = NewChainHandler()
+		} else {
+			fmt.Println("Single instance already created.")
+		}
+	} else {
+		fmt.Println("Single instance already created.")
+	}
+
+	return chainhandlerInstance
 }
 
 func (chainhandler *ChainHandler) GetLongestValidChain() *entity.Block {
@@ -30,27 +54,29 @@ func (chainhandler *ChainHandler) GetLongestValidChain() *entity.Block {
 		}
 	}
 
+	go chainhandler.AddBlock()
+
 	return block
 }
 
-func (chainhandler *ChainHandler) AddBlock(block *entity.Block) error {
+func (chainhandler *ChainHandler) AddBlock() error {
 
-	chainhandler.locker.Lock()
-	defer chainhandler.locker.Unlock()
+	for block := range chainhandler.Addblockchan {
 
-	if !chainhandler.ValidateBlock(block) {
-		return nil
-	}
-
-	for index, tail := range chainhandler.chain.Tails {
-		if secsuit.ComputeHash(tail.String()) == block.PrevHash {
-
-			block.SerialNo = tail.SerialNo + 1
-			chainhandler.chain.Tails[index] = block
-			break
+		if !chainhandler.ValidateBlock(block) {
+			continue
 		}
+
+		for index, tail := range chainhandler.chain.Tails {
+			if secsuit.ComputeHash(tail.String()) == block.PrevHash {
+
+				block.SerialNo = tail.SerialNo + 1
+				chainhandler.chain.Tails[index] = block
+				break
+			}
+		}
+		chainhandler.chain.Chain[secsuit.ComputeHash(block.String())] = block
 	}
-	chainhandler.chain.Chain[secsuit.ComputeHash(block.String())] = block
 
 	return nil
 }

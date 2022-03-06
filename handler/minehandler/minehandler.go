@@ -1,9 +1,11 @@
 package minehandler
 
 import (
+	"fmt"
 	"rfs/handler/chainhandler"
 	"rfs/handler/operationhandler"
 	"rfs/models/entity"
+	"sync"
 	"time"
 )
 
@@ -11,31 +13,52 @@ type MinerHandler struct {
 	genOpBlockTimeout  time.Duration
 	genNoOpBlockTime   time.Time
 	cancelNoOpBlockGen chan int
-	operationHandler   *operationhandler.OperationHandler
-	chainhandler       *chainhandler.ChainHandler
+
+	operationHandler *operationhandler.OperationHandler
+	chainhandler     *chainhandler.ChainHandler
 }
 
 func NewMinerHandler() *MinerHandler {
 
 	minerHandler := &MinerHandler{
-		genOpBlockTimeout:  1 * time.Minute,
+		genOpBlockTimeout:  2 * time.Minute,
 		genNoOpBlockTime:   time.Now(),
 		cancelNoOpBlockGen: make(chan int),
 
-		operationHandler: operationhandler.NewOperationHandler(),
-		chainhandler:     chainhandler.NewChainHandler(),
+		operationHandler: operationhandler.NewSingletonOperationHandler(),
+		chainhandler:     chainhandler.NewSingletonChainHandler(),
 	}
 
-	go minerHandler.mineBlock()
-
 	return minerHandler
+}
+
+var lock = &sync.Mutex{}
+var singletonInstance *MinerHandler
+
+func NewSingletonMinerHandler() *MinerHandler {
+
+	if singletonInstance == nil {
+		lock.Lock()
+		defer lock.Unlock()
+
+		if singletonInstance == nil {
+			fmt.Println("Creating single instance now.")
+			singletonInstance = NewMinerHandler()
+		} else {
+			fmt.Println("Single instance already created.")
+		}
+	} else {
+		fmt.Println("Single instance already created.")
+	}
+
+	return singletonInstance
 }
 
 func (minerHandler *MinerHandler) AddNewOperation(operation *entity.Operation) {
 	minerHandler.operationHandler.OperationChan <- operation
 }
 
-func (minerHandler *MinerHandler) mineBlock() {
+func (minerHandler *MinerHandler) MineBlock() {
 	for {
 
 		time.Sleep(minerHandler.genOpBlockTimeout)
@@ -58,7 +81,7 @@ func (minerHandler *MinerHandler) generateOpBlock(newOperations []*entity.Operat
 
 	newOpBlock := entity.NewOpBlock(lastblock, newOperations)
 
-	minerHandler.chainhandler.AddBlock(newOpBlock)
+	minerHandler.chainhandler.Addblockchan <- newOpBlock
 }
 
 func (minerHandler *MinerHandler) generateNoOpBlock() {
@@ -67,7 +90,7 @@ func (minerHandler *MinerHandler) generateNoOpBlock() {
 
 	newNoOpBlock := entity.NewNoOpBlock(lastblock)
 
-	minerHandler.chainhandler.AddBlock(newNoOpBlock)
+	minerHandler.chainhandler.Addblockchan <- newNoOpBlock
 }
 
 // func (minerHandler *MinerHandler) AddNoOpBlock(ctx context.Context) {

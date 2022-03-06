@@ -1,11 +1,15 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"rfs/config"
 	"rfs/handler/minehandler"
+	"rfs/handler/synchandler"
+	"rfs/miner"
 	"rfs/models/entity"
 	"rfs/models/modelconst"
 	"time"
@@ -23,14 +27,30 @@ func NewMinerHandler() {
 
 func main() {
 
-	minehandler := minehandler.NewMinerHandler()
+	minerId := flag.Int("minerid", 2, "miner id")
 
-	func() {
+	flag.Parse()
+
+	config.NewSingletonConfigHandler(config.ConsoleArg{MinerId: *minerId})
+
+	minerHttp := miner.NewMinerHttp()
+
+	go minerHttp.ListenPeerMiners()
+
+	go minerHttp.ConnectPeerMiners()
+
+	minehandler := minehandler.NewSingletonMinerHandler()
+
+	synchandler := synchandler.NewSingletonSyncHandler()
+
+	synchandler.Sync()
+
+	go func() {
 		time.Sleep(time.Minute)
 		minehandler.AddNewOperation(entity.NewOperation("first.txt", modelconst.CREATE_FILE, nil))
 	}()
 
-	func() {
+	go func() {
 		time.Sleep(3 * time.Minute)
 		minehandler.AddNewOperation(entity.NewOperation("first.txt", modelconst.APPEND_RECORD, []byte("Append please")))
 	}()
