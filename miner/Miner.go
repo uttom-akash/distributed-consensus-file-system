@@ -1,10 +1,13 @@
 package miner
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"rfs/bclib"
 	"rfs/config"
+	"rfs/handler/chainhandler"
+	"rfs/models/entity"
 	"time"
 )
 
@@ -52,6 +55,7 @@ func (handler *MinerHttp) ListenPeerMiners() {
 	rootHandler := http.NewServeMux()
 
 	rootHandler.Handle("/ping", NewPeerHandler())
+	rootHandler.Handle("/downloadchain", NewHandleChainDownload())
 
 	bclib.HttpListen(http.Server{
 		Addr:    config.MinerConfig.IpAddress + ":" + config.MinerConfig.Port,
@@ -66,6 +70,36 @@ func (handler *MinerHttp) ListenClients() {
 		Handler: NewClientHandler(),
 	})
 
+}
+
+func (handler *MinerHttp) DownloadChain() {
+
+	con := config.GetSingletonConfigHandler()
+
+	for {
+		for _, peerId := range con.MinerConfig.Peers {
+			log.Println("Connecting Peer : ", peerId)
+			peerconfig := config.GetConfig(peerId)
+			resp, err := http.Get("http://" + peerconfig.IpAddress + ":" + peerconfig.Port + "/downloadchain")
+
+			if err != nil {
+				log.Println("Error : pinging ", peerId, err)
+				continue
+			}
+
+			chain := new(entity.BlockChain)
+			er := json.NewDecoder(resp.Body).Decode(chain)
+
+			if er != nil {
+				log.Println("Error : pinging ", peerId, er)
+				continue
+			}
+
+			log.Println("Ping success: ", chain)
+
+			time.Sleep(3 * time.Second)
+		}
+	}
 }
 
 func (handler *MinerHttp) ConnectPeerMiners() {
@@ -86,7 +120,6 @@ func (handler *MinerHttp) ConnectPeerMiners() {
 			time.Sleep(3 * time.Second)
 		}
 	}
-
 }
 
 func NewMinerHttp() *MinerHttp {
@@ -101,6 +134,27 @@ func (handler *PeerHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 
 func NewPeerHandler() *PeerHandler {
 	return &PeerHandler{}
+}
+
+type HandleChainDownload struct {
+	chainHandler *chainhandler.ChainHandler
+}
+
+func (handler *HandleChainDownload) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	chain := handler.chainHandler.GetChain()
+	encodedJson, err := json.Marshal(chain)
+
+	if err != nil {
+		log.Println("error: ", err)
+	}
+
+	log.Println("Encoded: ", encodedJson)
+
+	rw.Write(encodedJson)
+}
+
+func NewHandleChainDownload() *HandleChainDownload {
+	return &HandleChainDownload{chainHandler: chainhandler.NewSingletonChainHandler()}
 }
 
 type ClientHandler struct{}

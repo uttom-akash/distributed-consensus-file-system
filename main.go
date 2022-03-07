@@ -37,7 +37,7 @@ func main() {
 
 	go minerHttp.ListenPeerMiners()
 
-	go minerHttp.ConnectPeerMiners()
+	go minerHttp.DownloadChain()
 
 	minehandler := minehandler.NewSingletonMinerHandler()
 

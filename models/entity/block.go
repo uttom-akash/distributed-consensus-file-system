@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"rfs/bclib"
 	"rfs/secsuit"
 	"strconv"
 	"time"
@@ -21,6 +22,7 @@ func (block *Block) String() string {
 }
 
 func NewOpBlock(prevblock *Block, operations []*Operation) *Block {
+	time.Sleep(time.Duration(bclib.Random(40, 60)) * time.Second)
 	return &Block{
 		PrevHash:   secsuit.ComputeHash(prevblock.String()),
 		Operations: operations,
@@ -29,6 +31,7 @@ func NewOpBlock(prevblock *Block, operations []*Operation) *Block {
 }
 
 func NewNoOpBlock(prevblock *Block) *Block {
+	time.Sleep(time.Duration(bclib.Random(20, 40)) * time.Second)
 	return &Block{
 		PrevHash:  secsuit.ComputeHash(prevblock.String()),
 		TimeStamp: time.Now(),

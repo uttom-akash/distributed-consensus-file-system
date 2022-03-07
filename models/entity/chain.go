@@ -10,8 +10,8 @@ type Chain map[string]*Block
 type Tails []*Block
 
 type BlockChain struct {
-	Chain Chain
-	Tails Tails
+	Chain Chain `json:"chain,omitempty"`
+	Tails Tails `json:"tails,omitempty"`
 }
 
 func NewBlockchain() *BlockChain {

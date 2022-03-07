@@ -92,3 +92,8 @@ func (chainhandler *ChainHandler) ValidateBlock(block *entity.Block) bool {
 
 	return false
 }
+
+func (chainhandler *ChainHandler) GetChain() *entity.BlockChain {
+
+	return chainhandler.chain
+}
