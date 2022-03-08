@@ -46,22 +46,22 @@ type Miner interface {
 type MinerHttp struct{}
 
 //Connect
-func (handler *MinerHttp) ListenPeerMiners() {
+// func (handler *MinerHttp) ListenPeerMiners() {
 
-	log.Println("ListenPeerMiners")
+// 	log.Println("ListenPeerMiners")
 
-	config := config.GetSingletonConfigHandler()
+// 	config := config.GetSingletonConfigHandler()
 
-	rootHandler := http.NewServeMux()
+// 	rootHandler := http.NewServeMux()
 
-	rootHandler.Handle("/ping", NewPeerHandler())
-	rootHandler.Handle("/downloadchain", NewHandleChainDownload())
+// 	rootHandler.Handle("/ping", NewPeerHandler())
+// 	rootHandler.Handle("/downloadchain", NewHandleChainDownload())
 
-	bclib.HttpListen(http.Server{
-		Addr:    config.MinerConfig.IpAddress + ":" + config.MinerConfig.Port,
-		Handler: rootHandler,
-	})
-}
+// 	bclib.HttpListen(http.Server{
+// 		Addr:    config.MinerConfig.IpAddress + ":" + config.MinerConfig.Port,
+// 		Handler: rootHandler,
+// 	})
+// }
 
 func (handler *MinerHttp) ListenClients() {
 
@@ -78,12 +78,12 @@ func (handler *MinerHttp) DownloadChain() {
 
 	for {
 		for _, peerId := range con.MinerConfig.Peers {
-			log.Println("Connecting Peer : ", peerId)
+			log.Println("DownloadChain: Connecting Peer : ", peerId)
 			peerconfig := config.GetConfig(peerId)
 			resp, err := http.Get("http://" + peerconfig.IpAddress + ":" + peerconfig.Port + "/downloadchain")
 
 			if err != nil {
-				log.Println("Error : pinging ", peerId, err)
+				log.Println("DownloadChain: Error : pinging ", peerId, err)
 				continue
 			}
 
@@ -91,36 +91,36 @@ func (handler *MinerHttp) DownloadChain() {
 			er := json.NewDecoder(resp.Body).Decode(chain)
 
 			if er != nil {
-				log.Println("Error : pinging ", peerId, er)
+				log.Println("DownloadChain: Error : pinging ", peerId, er)
 				continue
 			}
 
-			log.Println("Ping success: ", chain)
+			log.Println("DownloadChain : Ping success: ", chain)
 
 			time.Sleep(3 * time.Second)
 		}
 	}
 }
 
-func (handler *MinerHttp) ConnectPeerMiners() {
-	con := config.GetSingletonConfigHandler()
+// func (handler *MinerHttp) ConnectPeerMiners() {
+// 	con := config.GetSingletonConfigHandler()
 
-	for {
-		for _, peerId := range con.MinerConfig.Peers {
-			log.Println("Connecting Peer : ", peerId)
-			peerconfig := config.GetConfig(peerId)
-			_, err := http.Get("http://" + peerconfig.IpAddress + ":" + peerconfig.Port + "/ping")
+// 	for {
+// 		for _, peerId := range con.MinerConfig.Peers {
+// 			log.Println("Connecting Peer : ", peerId)
+// 			peerconfig := config.GetConfig(peerId)
+// 			_, err := http.Get("http://" + peerconfig.IpAddress + ":" + peerconfig.Port + "/ping")
 
-			if err != nil {
-				log.Println("Error : pinging ", peerId, err)
-			}
+// 			if err != nil {
+// 				log.Println("Error : pinging ", peerId, err)
+// 			}
 
-			log.Println("Ping success: ")
+// 			log.Println("Ping success: ")
 
-			time.Sleep(3 * time.Second)
-		}
-	}
-}
+// 			time.Sleep(3 * time.Second)
+// 		}
+// 	}
+// }
 
 func NewMinerHttp() *MinerHttp {
 	return &MinerHttp{}

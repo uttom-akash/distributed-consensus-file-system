@@ -9,7 +9,6 @@ import (
 	"rfs/config"
 	"rfs/handler/minehandler"
 	"rfs/handler/synchandler"
-	"rfs/miner"
 	"rfs/models/entity"
 	"rfs/models/modelconst"
 	"time"
@@ -33,11 +32,9 @@ func main() {
 
 	config.NewSingletonConfigHandler(config.ConsoleArg{MinerId: *minerId})
 
-	minerHttp := miner.NewMinerHttp()
+	// minerHttp := miner.NewMinerHttp()
 
-	go minerHttp.ListenPeerMiners()
-
-	go minerHttp.DownloadChain()
+	// go minerHttp.DownloadChain()
 
 	minehandler := minehandler.NewSingletonMinerHandler()
 

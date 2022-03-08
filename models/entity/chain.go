@@ -2,7 +2,6 @@ package entity
 
 import (
 	"rfs/secsuit"
-	"time"
 )
 
 type Chain map[string]*Block
@@ -18,7 +17,7 @@ func NewBlockchain() *BlockChain {
 	chain := make(Chain)
 	tails := make(Tails, 0)
 
-	genesisBlock := createGenesisBlock()
+	genesisBlock := CreateGenesisBlock()
 
 	chain[secsuit.ComputeHash(genesisBlock.String())] = genesisBlock
 	tails = append(tails, genesisBlock)
@@ -26,12 +25,5 @@ func NewBlockchain() *BlockChain {
 	return &BlockChain{
 		Chain: chain,
 		Tails: tails,
-	}
-}
-
-func createGenesisBlock() *Block {
-	return &Block{
-		TimeStamp: time.Now(),
-		SerialNo:  1,
 	}
 }

@@ -4,17 +4,29 @@ import (
 	"fmt"
 	"rfs/handler/chainhandler"
 	"rfs/handler/minehandler"
+	"rfs/handler/minernetworkoperationhandler"
 	"rfs/handler/operationhandler"
+	"rfs/handler/peerhandler"
 	"sync"
 )
 
 type SyncHandler struct {
-	mineHandler      *minehandler.MinerHandler
-	chainhandler     *chainhandler.ChainHandler
-	operationhandler *operationhandler.OperationHandler
+	mineHandler           *minehandler.MinerHandler
+	chainhandler          *chainhandler.ChainHandler
+	operationhandler      *operationhandler.OperationHandler
+	peerhandler           *peerhandler.PeerHandler
+	minerNetworkOperation *minernetworkoperationhandler.MinerNetworkOperationHandler
 }
 
 func (syncHandler *SyncHandler) Sync() {
+
+	go syncHandler.peerhandler.ListenPeer()
+
+	go syncHandler.minerNetworkOperation.DownloadChain()
+
+	go syncHandler.minerNetworkOperation.DisseminateOperations()
+
+	go syncHandler.minerNetworkOperation.DisseminateBlocks()
 
 	go syncHandler.operationhandler.ListenOperationChannel()
 
@@ -26,9 +38,11 @@ func (syncHandler *SyncHandler) Sync() {
 
 func NewSyncHandler() *SyncHandler {
 	return &SyncHandler{
-		mineHandler:      minehandler.NewSingletonMinerHandler(),
-		chainhandler:     chainhandler.NewSingletonChainHandler(),
-		operationhandler: operationhandler.NewSingletonOperationHandler(),
+		mineHandler:           minehandler.NewSingletonMinerHandler(),
+		chainhandler:          chainhandler.NewSingletonChainHandler(),
+		operationhandler:      operationhandler.NewSingletonOperationHandler(),
+		peerhandler:           peerhandler.NewSingletonPeerHandler(),
+		minerNetworkOperation: minernetworkoperationhandler.NewSingletonMinerNetworkOperationHandler(),
 	}
 }
 

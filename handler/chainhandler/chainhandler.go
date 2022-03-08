@@ -3,21 +3,24 @@ package chainhandler
 import (
 	"fmt"
 	"math"
+	"rfs/handler/minernetworkoperationhandler"
 	"rfs/models/entity"
 	"rfs/secsuit"
 	"sync"
 )
 
 type ChainHandler struct {
-	chain        *entity.BlockChain
-	Addblockchan chan *entity.Block
+	chain                        *entity.BlockChain
+	Addblockchan                 chan *entity.Block
+	minerNetworkOperationHandler *minernetworkoperationhandler.MinerNetworkOperationHandler
 }
 
 func NewChainHandler() *ChainHandler {
 
 	return &ChainHandler{
-		chain:        entity.NewBlockchain(),
-		Addblockchan: make(chan *entity.Block, 2),
+		chain:                        entity.NewBlockchain(),
+		Addblockchan:                 make(chan *entity.Block, 2),
+		minerNetworkOperationHandler: minernetworkoperationhandler.NewSingletonMinerNetworkOperationHandler(),
 	}
 }
 
@@ -76,6 +79,8 @@ func (chainhandler *ChainHandler) AddBlock() error {
 			}
 		}
 		chainhandler.chain.Chain[secsuit.ComputeHash(block.String())] = block
+
+		chainhandler.minerNetworkOperationHandler.NewBlocksChan <- block
 	}
 
 	return nil

@@ -2,20 +2,23 @@ package operationhandler
 
 import (
 	"fmt"
+	"rfs/handler/minernetworkoperationhandler"
 	"rfs/models/entity"
 	"rfs/models/modelconst"
 	"sync"
 )
 
 type OperationHandler struct {
-	operations    []*entity.Operation
-	OperationChan chan *entity.Operation
+	operations                   []*entity.Operation
+	OperationChan                chan *entity.Operation
+	minerNetworkOperationHandler *minernetworkoperationhandler.MinerNetworkOperationHandler
 }
 
 func NewOperationHandler() *OperationHandler {
 	operationHandler := &OperationHandler{
-		operations:    make([]*entity.Operation, 0),
-		OperationChan: make(chan *entity.Operation, 1),
+		operations:                   make([]*entity.Operation, 0),
+		OperationChan:                make(chan *entity.Operation, 1),
+		minerNetworkOperationHandler: minernetworkoperationhandler.NewSingletonMinerNetworkOperationHandler(),
 	}
 
 	return operationHandler
@@ -58,6 +61,10 @@ func (OperationHandler *OperationHandler) GetNewOperations() []*entity.Operation
 
 func (operationhandler *OperationHandler) ListenOperationChannel() {
 	for op := range operationhandler.OperationChan {
+
+		operationhandler.minerNetworkOperationHandler.NewOperationsChan <- op
+
 		operationhandler.operations = append(operationhandler.operations, op)
+
 	}
 }
