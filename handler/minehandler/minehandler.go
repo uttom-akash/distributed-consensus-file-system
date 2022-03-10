@@ -63,30 +63,30 @@ func (minerHandler *MinerHandler) MineBlock() {
 
 		time.Sleep(minerHandler.genOpBlockTimeout)
 
+		// 1 : last block
+		lastblock := minerHandler.chainhandler.GetLongestValidChain()
+
+		// 2 : new operation only
 		//Todo : needs some lock in case of race condition
 		newOperations := minerHandler.operationHandler.GetNewOperations()
 
 		switch len(newOperations) {
 		case 0:
-			minerHandler.generateNoOpBlock()
+			minerHandler.generateNoOpBlock(lastblock)
 		default:
-			minerHandler.generateOpBlock(newOperations)
+			minerHandler.generateOpBlock(newOperations, lastblock)
 		}
 	}
 }
 
-func (minerHandler *MinerHandler) generateOpBlock(newOperations []*entity.Operation) {
-
-	lastblock := minerHandler.chainhandler.GetLongestValidChain()
+func (minerHandler *MinerHandler) generateOpBlock(newOperations []*entity.Operation, lastblock *entity.Block) {
 
 	newOpBlock := entity.NewOpBlock(lastblock, newOperations)
 
 	minerHandler.chainhandler.Addblockchan <- newOpBlock
 }
 
-func (minerHandler *MinerHandler) generateNoOpBlock() {
-
-	lastblock := minerHandler.chainhandler.GetLongestValidChain()
+func (minerHandler *MinerHandler) generateNoOpBlock(lastblock *entity.Block) {
 
 	newNoOpBlock := entity.NewNoOpBlock(lastblock)
 

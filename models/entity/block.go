@@ -18,8 +18,23 @@ type Block struct {
 }
 
 func (block *Block) String() string {
-	//Todo: Need to implement it appropriately
-	return block.PrevHash + block.TimeStamp.String() + strconv.Itoa(block.SerialNo)
+	//Todo: Need to implement it appropriately like markle root
+	str := ""
+	str += " " + block.PrevHash
+	str += " " + strconv.Itoa(block.MinerID)
+	str += " " + strconv.Itoa(block.Nonce)
+	str += " " + block.TimeStamp.String()
+	str += " " + strconv.Itoa(block.SerialNo)
+
+	for _, operation := range block.Operations {
+		str += " " + operation.String()
+	}
+
+	return str
+}
+
+func (block *Block) Hash() string {
+	return secsuit.ComputeHash(block.String())
 }
 
 func NewOpBlock(prevblock *Block, operations []*Operation) *Block {
@@ -29,7 +44,7 @@ func NewOpBlock(prevblock *Block, operations []*Operation) *Block {
 	config := config.GetSingletonConfigHandler()
 
 	return &Block{
-		PrevHash:   secsuit.ComputeHash(prevblock.String()),
+		PrevHash:   prevblock.Hash(),
 		Operations: operations,
 		MinerID:    config.MinerConfig.MinerId,
 		TimeStamp:  time.Now(),
@@ -44,7 +59,7 @@ func NewNoOpBlock(prevblock *Block) *Block {
 	config := config.GetSingletonConfigHandler()
 
 	return &Block{
-		PrevHash:  secsuit.ComputeHash(prevblock.String()),
+		PrevHash:  prevblock.Hash(),
 		MinerID:   config.MinerConfig.MinerId,
 		TimeStamp: time.Now(),
 		SerialNo:  prevblock.SerialNo + 1,

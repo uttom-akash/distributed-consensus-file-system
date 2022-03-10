@@ -51,6 +51,8 @@ func NewSingletonPeerHandler() *PeerHandler {
 }
 
 func (handler *PeerHandler) ListenPeer() {
+	log.Println("PeerHandler/ListenPeer - setting up")
+
 	config := config.GetSingletonConfigHandler()
 
 	rootHandler := http.NewServeMux()
@@ -64,58 +66,68 @@ func (handler *PeerHandler) ListenPeer() {
 		Addr:    config.MinerConfig.IpAddress + ":" + config.MinerConfig.Port,
 		Handler: rootHandler,
 	})
+
+	log.Println("PeerHandler/ListenPeer - setting done.")
 }
 
 func (handler *PeerHandler) serveChainDownload(rw http.ResponseWriter, req *http.Request) {
-	log.Println("Serving chain download")
+	log.Println("PeerHandler/serveChainDownload - in")
 
 	chain := handler.chainHandler.GetChain()
-	encodedJson, err := json.Marshal(chain)
+	encodedJson, encodedErr := json.Marshal(chain)
 
-	if err != nil {
-		log.Fatalln("Error: chain download", err)
+	if encodedErr != nil {
+		log.Fatalf("PeerHandler/serveChainDownload - error encoding chain: %s", encodedErr)
 	}
 
+	rw.Header().Set("Content-Type", "application/json")
+	rw.WriteHeader(http.StatusOK)
 	rw.Write(encodedJson)
 
-	log.Println("Success : chain download")
+	log.Println("PeerHandler/serveChainDownload - out")
 }
 
 func (handler *PeerHandler) servePong(rw http.ResponseWriter, req *http.Request) {
-	log.Println("pong response")
+	log.Println("PeerHandler/servePong - in")
 
 	rw.Write([]byte("pong!"))
 
 }
 
 func (handler *PeerHandler) ListenOperation(rw http.ResponseWriter, req *http.Request) {
-	log.Println("ListenOperation: New Operation arrival")
+	log.Println("PeerHandler/ListenOperation - in")
 
 	operation := new(entity.Operation)
 
-	err := json.NewDecoder(req.Body).Decode(operation)
+	decodedErr := json.NewDecoder(req.Body).Decode(operation)
 
-	if err != nil {
-		log.Fatalln("ListenOperation: error decoding")
+	if decodedErr != nil {
+		log.Fatalf("PeerHandler/ListenOperation - error decoding operation: %s", decodedErr)
 	}
 
-	log.Println("ListenOperation: decoded operation ", operation)
-
 	handler.minerHandler.AddNewOperation(operation)
+
+	log.Println("PeerHandler/ListenOperation - operation is added to channel $handler.minerHandler.AddNewOperation$")
+
+	rw.WriteHeader(http.StatusOK)
+
 }
 
 func (handler *PeerHandler) ListenBlock(rw http.ResponseWriter, req *http.Request) {
-	log.Println("ListenBlock: New block arrival")
+
+	log.Println("PeerHandler/ListenBlock - in")
 
 	block := new(entity.Block)
 
-	err := json.NewDecoder(req.Body).Decode(block)
+	decodedErr := json.NewDecoder(req.Body).Decode(block)
 
-	if err != nil {
-		log.Fatalln("ListenBlock: error decoding")
+	if decodedErr != nil {
+		log.Fatalf("PeerHandler/ListenBlock - error decoding block: %s", decodedErr)
 	}
 
-	log.Println("ListenBlock: decoded  block: ", block)
-
 	handler.chainHandler.Addblockchan <- block
+
+	log.Println("PeerHandler/ListenBlock - block is added to channel $handler.chainHandler.Addblockchan$")
+
+	rw.WriteHeader(http.StatusOK)
 }

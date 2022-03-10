@@ -2,6 +2,7 @@ package operationhandler
 
 import (
 	"fmt"
+	"log"
 	"rfs/handler/minernetworkoperationhandler"
 	"rfs/models/entity"
 	"rfs/models/modelconst"
@@ -59,12 +60,36 @@ func (OperationHandler *OperationHandler) GetNewOperations() []*entity.Operation
 	return newOperations
 }
 
+func (OperationHandler *OperationHandler) SetOperationsPending(operations []*entity.Operation) {
+
+	for _, op := range operations {
+		if op.State == modelconst.NEW {
+			op.State = modelconst.PENDING
+		}
+	}
+}
+
 func (operationhandler *OperationHandler) ListenOperationChannel() {
 	for op := range operationhandler.OperationChan {
+		if !operationhandler.validateOperation(op) {
+			log.Println("OperationHandler/ListenOperationChannel - invalid operation ", op)
+			continue
+		}
 
 		operationhandler.minerNetworkOperationHandler.NewOperationsChan <- op
 
 		operationhandler.operations = append(operationhandler.operations, op)
 
 	}
+}
+
+func (operationhandler *OperationHandler) validateOperation(operation *entity.Operation) bool {
+
+	for _, op := range operationhandler.operations {
+		if op.OperationId == operation.OperationId {
+			return false
+		}
+	}
+
+	return true
 }

@@ -10,12 +10,14 @@ func HttpListen(serverConf http.Server) {
 	peerServer := serverConf
 
 	// go func() {
-	log.Println("starting the peer server on: ", peerServer.Addr)
-	err := peerServer.ListenAndServe()
-	log.Println("Started the peer server on: ", peerServer.Addr)
+	log.Println("bclib/HttpListen - starting the peer server on: ", peerServer.Addr)
 
-	if err != nil {
-		log.Fatalf("Error : ", err)
+	httpErr := peerServer.ListenAndServe()
+
+	log.Println("bclib/HttpListen - started the peer server on: ", peerServer.Addr)
+
+	if httpErr != nil {
+		log.Fatalln("bclib/HttpListen - error : ", httpErr)
 	}
 
 	// interruptChan := make(chan os.Signal, 1)

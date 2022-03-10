@@ -1,12 +1,18 @@
 package synchandler
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
+	"os"
+	"os/signal"
+	"rfs/config"
 	"rfs/handler/chainhandler"
 	"rfs/handler/minehandler"
 	"rfs/handler/minernetworkoperationhandler"
 	"rfs/handler/operationhandler"
 	"rfs/handler/peerhandler"
+	"strconv"
 	"sync"
 )
 
@@ -34,7 +40,11 @@ func (syncHandler *SyncHandler) Sync() {
 
 	go syncHandler.mineHandler.MineBlock()
 
+	syncHandler.shutdownOnInterrupt()
 }
+
+var lock = &sync.Mutex{}
+var singletonInstance *SyncHandler
 
 func NewSyncHandler() *SyncHandler {
 	return &SyncHandler{
@@ -45,9 +55,6 @@ func NewSyncHandler() *SyncHandler {
 		minerNetworkOperation: minernetworkoperationhandler.NewSingletonMinerNetworkOperationHandler(),
 	}
 }
-
-var lock = &sync.Mutex{}
-var singletonInstance *SyncHandler
 
 func NewSingletonSyncHandler() *SyncHandler {
 
@@ -66,4 +73,48 @@ func NewSingletonSyncHandler() *SyncHandler {
 	}
 
 	return singletonInstance
+}
+
+func (syncHandler *SyncHandler) shutdownOnInterrupt() {
+
+	interruptChan := make(chan os.Signal, 1)
+	signal.Notify(interruptChan, os.Interrupt)
+	signal.Notify(interruptChan, os.Kill)
+
+	sig := <-interruptChan
+
+	syncHandler.writeChain()
+
+	log.Println("Shutting down the system gracefully ", sig)
+}
+
+func (syncHandler *SyncHandler) writeChain() {
+
+	log.Println("SyncHandler/write - Writing")
+
+	config := config.GetSingletonConfigHandler()
+
+	jsonFile, ioErr := os.Create("./Chain" + strconv.Itoa(config.MinerConfig.MinerId) + ".json")
+
+	if ioErr != nil {
+		log.Println("SyncHandler/write - error creating json file ", ioErr)
+		return
+	}
+
+	defer jsonFile.Close()
+
+	jsonData, encodedErr := json.Marshal(syncHandler.chainhandler.GetChain().Chain)
+
+	if encodedErr != nil {
+		log.Println("SyncHandler/write - error encoding ", encodedErr)
+		return
+	}
+
+	// sanity check
+	fmt.Println("SyncHandler/write - ", string(jsonData))
+
+	jsonFile.Write(jsonData)
+	jsonFile.Close()
+
+	fmt.Println("SyncHandler/write - JSON data written to ", jsonFile.Name())
 }

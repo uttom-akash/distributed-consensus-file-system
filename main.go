@@ -2,10 +2,7 @@ package main
 
 import (
 	"flag"
-	"log"
-	"net/http"
-	"os"
-	"os/signal"
+	"rfs/bclib"
 	"rfs/config"
 	"rfs/handler/minehandler"
 	"rfs/handler/synchandler"
@@ -14,51 +11,26 @@ import (
 	"time"
 )
 
-type MinerHandler struct{}
-
-func (handler *MinerHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-
-}
-
-func NewMinerHandler() {
-
-}
-
 func main() {
 
 	minerId := flag.Int("minerid", 2, "miner id")
-
 	flag.Parse()
-
 	config.NewSingletonConfigHandler(config.ConsoleArg{MinerId: *minerId})
 
-	// minerHttp := miner.NewMinerHttp()
-
-	// go minerHttp.DownloadChain()
-
 	minehandler := minehandler.NewSingletonMinerHandler()
+
+	go func() {
+		time.Sleep(time.Duration(bclib.Random(1, 2)) * time.Minute)
+		minehandler.AddNewOperation(entity.NewOperation("first.txt", modelconst.CREATE_FILE, nil))
+	}()
+	go func() {
+		time.Sleep(time.Duration(bclib.Random(2, 4)) * time.Minute)
+		minehandler.AddNewOperation(entity.NewOperation("first.txt", modelconst.APPEND_RECORD, []byte("Append please")))
+	}()
 
 	synchandler := synchandler.NewSingletonSyncHandler()
 
 	synchandler.Sync()
-
-	go func() {
-		time.Sleep(time.Minute)
-		minehandler.AddNewOperation(entity.NewOperation("first.txt", modelconst.CREATE_FILE, nil))
-	}()
-
-	go func() {
-		time.Sleep(3 * time.Minute)
-		minehandler.AddNewOperation(entity.NewOperation("first.txt", modelconst.APPEND_RECORD, []byte("Append please")))
-	}()
-
-	interruptChan := make(chan os.Signal, 1)
-	signal.Notify(interruptChan, os.Interrupt)
-	signal.Notify(interruptChan, os.Kill)
-
-	sig := <-interruptChan
-
-	log.Println("Clossing ", sig)
 
 	// // a := time.Now()
 

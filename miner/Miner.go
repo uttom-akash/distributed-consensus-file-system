@@ -5,10 +5,7 @@ import (
 	"log"
 	"net/http"
 	"rfs/bclib"
-	"rfs/config"
 	"rfs/handler/chainhandler"
-	"rfs/models/entity"
-	"time"
 )
 
 type MinerNetworkOperation interface {
@@ -72,35 +69,35 @@ func (handler *MinerHttp) ListenClients() {
 
 }
 
-func (handler *MinerHttp) DownloadChain() {
+// func (handler *MinerHttp) DownloadChain() {
 
-	con := config.GetSingletonConfigHandler()
+// 	con := config.GetSingletonConfigHandler()
 
-	for {
-		for _, peerId := range con.MinerConfig.Peers {
-			log.Println("DownloadChain: Connecting Peer : ", peerId)
-			peerconfig := config.GetConfig(peerId)
-			resp, err := http.Get("http://" + peerconfig.IpAddress + ":" + peerconfig.Port + "/downloadchain")
+// 	for {
+// 		for _, peerId := range con.MinerConfig.Peers {
+// 			log.Println("DownloadChain: Connecting Peer : ", peerId)
+// 			peerconfig := config.GetConfig(peerId)
+// 			resp, err := http.Get("http://" + peerconfig.IpAddress + ":" + peerconfig.Port + "/downloadchain")
 
-			if err != nil {
-				log.Println("DownloadChain: Error : pinging ", peerId, err)
-				continue
-			}
+// 			if err != nil {
+// 				log.Println("DownloadChain: Error : pinging ", peerId, err)
+// 				continue
+// 			}
 
-			chain := new(entity.BlockChain)
-			er := json.NewDecoder(resp.Body).Decode(chain)
+// 			chain := new(entity.BlockChain)
+// 			er := json.NewDecoder(resp.Body).Decode(chain)
 
-			if er != nil {
-				log.Println("DownloadChain: Error : pinging ", peerId, er)
-				continue
-			}
+// 			if er != nil {
+// 				log.Println("DownloadChain: Error : pinging ", peerId, er)
+// 				continue
+// 			}
 
-			log.Println("DownloadChain : Ping success: ", chain)
+// 			log.Println("DownloadChain : Ping success: ", chain)
 
-			time.Sleep(3 * time.Second)
-		}
-	}
-}
+// 			time.Sleep(3 * time.Second)
+// 		}
+// 	}
+// }
 
 // func (handler *MinerHttp) ConnectPeerMiners() {
 // 	con := config.GetSingletonConfigHandler()
