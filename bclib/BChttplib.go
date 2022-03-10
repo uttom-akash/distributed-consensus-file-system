@@ -1,35 +1,35 @@
 package bclib
 
 import (
-	"context"
 	"log"
 	"net/http"
-	"os"
-	"os/signal"
-	"time"
 )
 
 func HttpListen(serverConf http.Server) {
 
 	peerServer := serverConf
 
-	go func() {
-		err := peerServer.ListenAndServe()
-		log.Println("Started the peer server on port: ", 8080)
+	// go func() {
+	log.Println("bclib/HttpListen - starting the peer server on: ", peerServer.Addr)
 
-		if err != nil {
-			log.Fatalf("Error : ", err)
-		}
-	}()
+	httpErr := peerServer.ListenAndServe()
 
-	interruptChan := make(chan os.Signal, 1)
+	log.Println("bclib/HttpListen - started the peer server on: ", peerServer.Addr)
 
-	signal.Notify(interruptChan, os.Interrupt)
-	signal.Notify(interruptChan, os.Kill)
+	if httpErr != nil {
+		log.Fatalln("bclib/HttpListen - error : ", httpErr)
+	}
 
-	sig := <-interruptChan
-	log.Println("Got Interrupt: ", sig)
+	// interruptChan := make(chan os.Signal, 1)
 
-	ctx, _ := context.WithTimeout(context.TODO(), 30*time.Second)
-	peerServer.Shutdown(ctx)
+	// signal.Notify(interruptChan, os.Interrupt)
+	// signal.Notify(interruptChan, os.Kill)
+
+	// sig := <-interruptChan
+	// log.Println("Got Interrupt: ", sig)
+
+	// ctx, _ := context.WithTimeout(context.TODO(), 30*time.Second)
+	// peerServer.Shutdown(ctx)
+
+	// }()
 }

@@ -1,32 +1,36 @@
 package main
 
 import (
-	"net/http"
+	"flag"
+	"rfs/bclib"
+	"rfs/config"
 	"rfs/handler/minehandler"
+	"rfs/handler/synchandler"
 	"rfs/models/entity"
 	"rfs/models/modelconst"
+	"time"
 )
-
-type MinerHandler struct{}
-
-func (handler *MinerHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-
-}
-
-func NewMinerHandler() {
-
-}
 
 func main() {
 
-	minehandler := minehandler.NewMinerHandler()
+	minerId := flag.Int("minerid", 2, "miner id")
+	flag.Parse()
+	config.NewSingletonConfigHandler(config.ConsoleArg{MinerId: *minerId})
 
-	minehandler.AddNewOperation(entity.NewOperation("first.txt", modelconst.CREATE_FILE, nil))
+	minehandler := minehandler.NewSingletonMinerHandler()
 
-	minehandler.AddNewOperation(entity.NewOperation("first.txt", modelconst.APPEND_RECORD, []byte("Append please")))
+	go func() {
+		time.Sleep(time.Duration(bclib.Random(1, 2)) * time.Minute)
+		minehandler.AddNewOperation(entity.NewOperation("first.txt", modelconst.CREATE_FILE, nil))
+	}()
+	go func() {
+		time.Sleep(time.Duration(bclib.Random(2, 4)) * time.Minute)
+		minehandler.AddNewOperation(entity.NewOperation("first.txt", modelconst.APPEND_RECORD, []byte("Append please")))
+	}()
 
-	minehandler.GenerateOpBlock()
-	minehandler.GenerateNoOpBlock()
+	synchandler := synchandler.NewSingletonSyncHandler()
+
+	synchandler.Sync()
 
 	// // a := time.Now()
 

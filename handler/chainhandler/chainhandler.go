@@ -1,51 +1,106 @@
 package chainhandler
 
 import (
-	"math"
+	"fmt"
+	"log"
+	"rfs/handler/minernetworkoperationhandler"
+	"rfs/handler/operationhandler"
 	"rfs/models/entity"
-	"rfs/secsuit"
+	"sync"
 )
 
 type ChainHandler struct {
-	chain *entity.BlockChain
+	chain                        *entity.BlockChain
+	Addblockchan                 chan *entity.Block
+	minerNetworkOperationHandler *minernetworkoperationhandler.MinerNetworkOperationHandler
+	operationHandler             *operationhandler.OperationHandler
 }
 
 func NewChainHandler() *ChainHandler {
 
 	return &ChainHandler{
-		chain: entity.NewBlockchain(),
+		chain:                        entity.NewBlockchain(),
+		Addblockchan:                 make(chan *entity.Block, 2),
+		minerNetworkOperationHandler: minernetworkoperationhandler.NewSingletonMinerNetworkOperationHandler(),
+		operationHandler:             operationhandler.NewSingletonOperationHandler(),
 	}
 }
 
-func (chainhandler *ChainHandler) GetLongestValidChain() *entity.Block {
-	largest := math.MinInt64
-	var block *entity.Block
+var lock = &sync.Mutex{}
+var chainhandlerInstance *ChainHandler
 
-	for _, blck := range chainhandler.chain.Tails {
-		if largest < blck.SerialNo {
-			largest = blck.SerialNo
-			block = blck
+func NewSingletonChainHandler() *ChainHandler {
+
+	if chainhandlerInstance == nil {
+		lock.Lock()
+		defer lock.Unlock()
+
+		if chainhandlerInstance == nil {
+			fmt.Println("Creating single instance now.")
+			chainhandlerInstance = NewChainHandler()
+		} else {
+			fmt.Println("Single instance already created.")
 		}
+	} else {
+		fmt.Println("Single instance already created.")
 	}
+
+	return chainhandlerInstance
+}
+
+func (chainhandler *ChainHandler) GetLongestValidChain() *entity.Block {
+	log.Println("ChainHandler/GetLongestValidChain - In")
+
+	// largest := math.MinInt64
+	// var block *entity.Block
+
+	// for _, blck := range chainhandler.chain.Tails {
+	// 	if largest < blck.SerialNo {
+	// 		largest = blck.SerialNo
+	// 		block = blck
+	// 	}
+	// }
+
+	block := chainhandler.chain.LastValidBlock()
+
+	log.Println("ChainHandler/GetLongestValidChain - Out ", block)
 
 	return block
 }
 
-func (chainhandler *ChainHandler) AddBlock(block *entity.Block) error {
+func (chainhandler *ChainHandler) AddBlock() error {
+	log.Println("ChainHandler/AddBlock - In")
 
-	if !chainhandler.ValidateBlock(block) {
-		return nil
-	}
+	for block := range chainhandler.Addblockchan {
 
-	for index, tail := range chainhandler.chain.Tails {
-		if secsuit.ComputeHash(tail.String()) == block.PrevHash {
+		log.Println("ChainHandler/AddBlock - Processing block", block)
 
-			block.SerialNo = tail.SerialNo + 1
-			chainhandler.chain.Tails[index] = block
-			break
+		if !chainhandler.ValidateBlock(block) {
+
+			log.Println("ChainHandler/AddBlock - invalid block ", block)
+
+			continue
 		}
+
+		log.Println("ChainHandler/AddBlock - successfully validated block ", block)
+
+		// Todo : needs to define better. suppose how do we add two block in same previous block
+		// for index, tail := range chainhandler.chain.Tails {
+		// 	if tail.Hash() == block.PrevHash {
+
+		// 		block.SerialNo = tail.SerialNo + 1
+		// 		chainhandler.chain.Tails[index] = block
+		// 		break
+		// 	}
+		// }
+
+		chainhandler.operationHandler.SetOperationsPending(block.Operations)
+		chainhandler.chain.AddBlock(block)
+
+		chainhandler.minerNetworkOperationHandler.NewBlocksChan <- block
+
+		log.Println("ChainHandler/AddBlock - successfully added block ", block)
 	}
-	chainhandler.chain.Chain[secsuit.ComputeHash(block.String())] = block
 
 	return nil
 }
@@ -55,9 +110,18 @@ func (chainhandler *ChainHandler) ValidateBlock(block *entity.Block) bool {
 	//Check that the nonce for the block is valid: PoW is correct and has the right difficulty.
 	//Check that the previous block hash points to a legal, previously generated, block.
 
-	if _, ok := chainhandler.chain.Chain[block.PrevHash]; ok {
-		return true
+	if _, alreadyAdded := chainhandler.chain.Chain[block.Hash()]; alreadyAdded {
+		return false
 	}
 
-	return false
+	if _, hasPerent := chainhandler.chain.Chain[block.PrevHash]; !hasPerent {
+		return false
+	}
+
+	return true
+}
+
+func (chainhandler *ChainHandler) GetChain() *entity.BlockChain {
+
+	return chainhandler.chain
 }
