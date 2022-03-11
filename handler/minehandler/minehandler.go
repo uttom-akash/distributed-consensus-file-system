@@ -5,6 +5,7 @@ import (
 	"rfs/handler/chainhandler"
 	"rfs/handler/operationhandler"
 	"rfs/models/entity"
+	"rfs/sharedchannel"
 	"sync"
 	"time"
 )
@@ -16,6 +17,7 @@ type MinerHandler struct {
 
 	operationHandler *operationhandler.OperationHandler
 	chainhandler     *chainhandler.ChainHandler
+	sharedchannel    *sharedchannel.SharedChannel
 }
 
 func NewMinerHandler() *MinerHandler {
@@ -24,9 +26,9 @@ func NewMinerHandler() *MinerHandler {
 		genOpBlockTimeout:  2 * time.Minute,
 		genNoOpBlockTime:   time.Now(),
 		cancelNoOpBlockGen: make(chan int),
-
-		operationHandler: operationhandler.NewSingletonOperationHandler(),
-		chainhandler:     chainhandler.NewSingletonChainHandler(),
+		sharedchannel:      sharedchannel.NewSingletonSharedChannel(),
+		operationHandler:   operationhandler.NewSingletonOperationHandler(),
+		chainhandler:       chainhandler.NewSingletonChainHandler(),
 	}
 
 	return minerHandler
@@ -55,7 +57,7 @@ func NewSingletonMinerHandler() *MinerHandler {
 }
 
 func (minerHandler *MinerHandler) AddNewOperation(operation *entity.Operation) {
-	minerHandler.operationHandler.OperationChan <- operation
+	minerHandler.sharedchannel.Operation <- operation
 }
 
 func (minerHandler *MinerHandler) MineBlock() {
@@ -83,14 +85,14 @@ func (minerHandler *MinerHandler) generateOpBlock(newOperations []*entity.Operat
 
 	newOpBlock := entity.NewOpBlock(lastblock, newOperations)
 
-	minerHandler.chainhandler.Addblockchan <- newOpBlock
+	minerHandler.sharedchannel.Block <- newOpBlock
 }
 
 func (minerHandler *MinerHandler) generateNoOpBlock(lastblock *entity.Block) {
 
 	newNoOpBlock := entity.NewNoOpBlock(lastblock)
 
-	minerHandler.chainhandler.Addblockchan <- newNoOpBlock
+	minerHandler.sharedchannel.Block <- newNoOpBlock
 }
 
 // func (minerHandler *MinerHandler) AddNoOpBlock(ctx context.Context) {

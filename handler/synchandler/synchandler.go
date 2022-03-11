@@ -103,7 +103,7 @@ func (syncHandler *SyncHandler) writeChain() {
 
 	defer jsonFile.Close()
 
-	jsonData, encodedErr := json.Marshal(syncHandler.chainhandler.GetChain().Chain)
+	jsonData, encodedErr := json.Marshal(syncHandler.chainhandler.GetChain().BlockHashMapper)
 
 	if encodedErr != nil {
 		log.Println("SyncHandler/write - error encoding ", encodedErr)

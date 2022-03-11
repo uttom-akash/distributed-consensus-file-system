@@ -7,7 +7,9 @@ import (
 	"log"
 	"net/http"
 	"rfs/config"
+	"rfs/handler/chainhandler"
 	"rfs/models/entity"
+	"rfs/sharedchannel"
 	"sync"
 	"time"
 )
@@ -21,14 +23,14 @@ type MinerNetworkOperation interface {
 }
 
 type MinerNetworkOperationHandler struct {
-	NewOperationsChan chan *entity.Operation
-	NewBlocksChan     chan *entity.Block
+	sharedchannel *sharedchannel.SharedChannel
+	chainHandler  *chainhandler.ChainHandler
 }
 
 func NewMinerNetworkOperationHandler() *MinerNetworkOperationHandler {
 	return &MinerNetworkOperationHandler{
-		NewOperationsChan: make(chan *entity.Operation, 1),
-		NewBlocksChan:     make(chan *entity.Block, 1),
+		sharedchannel: sharedchannel.NewSingletonSharedChannel(),
+		chainHandler:  chainhandler.NewSingletonChainHandler(),
 	}
 }
 
@@ -76,6 +78,8 @@ func (handler *MinerNetworkOperationHandler) DownloadChain() {
 			continue
 		}
 
+		handler.chainHandler.MargeChain(chain)
+
 		log.Println("Success: Downloading from peer : ", peerId)
 
 		time.Sleep(3 * time.Second)
@@ -88,7 +92,7 @@ func (handler *MinerNetworkOperationHandler) DisseminateOperations() {
 
 	con := config.GetSingletonConfigHandler()
 
-	for operation := range handler.NewOperationsChan {
+	for operation := range handler.sharedchannel.BroadcastOperation {
 		for _, peerId := range con.MinerConfig.Peers {
 
 			log.Println("MinerNetworkOperation/DisseminateOperations - disseminating to ", peerId, "; operation : ", operation)
@@ -123,7 +127,7 @@ func (handler *MinerNetworkOperationHandler) DisseminateBlocks() {
 
 	con := config.GetSingletonConfigHandler()
 
-	for block := range handler.NewBlocksChan {
+	for block := range handler.sharedchannel.BroadcastBlock {
 		for _, peerId := range con.MinerConfig.Peers {
 
 			log.Println("MinerNetworkOperation/DisseminateBlocks - disseminating to ", peerId, "; block : ", block)

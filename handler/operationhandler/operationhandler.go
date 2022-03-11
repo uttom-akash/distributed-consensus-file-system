@@ -3,23 +3,21 @@ package operationhandler
 import (
 	"fmt"
 	"log"
-	"rfs/handler/minernetworkoperationhandler"
 	"rfs/models/entity"
 	"rfs/models/modelconst"
+	"rfs/sharedchannel"
 	"sync"
 )
 
 type OperationHandler struct {
-	operations                   []*entity.Operation
-	OperationChan                chan *entity.Operation
-	minerNetworkOperationHandler *minernetworkoperationhandler.MinerNetworkOperationHandler
+	operations    []*entity.Operation
+	sharedchannel *sharedchannel.SharedChannel
 }
 
 func NewOperationHandler() *OperationHandler {
 	operationHandler := &OperationHandler{
-		operations:                   make([]*entity.Operation, 0),
-		OperationChan:                make(chan *entity.Operation, 1),
-		minerNetworkOperationHandler: minernetworkoperationhandler.NewSingletonMinerNetworkOperationHandler(),
+		operations:    make([]*entity.Operation, 0),
+		sharedchannel: sharedchannel.NewSingletonSharedChannel(),
 	}
 
 	return operationHandler
@@ -70,13 +68,13 @@ func (OperationHandler *OperationHandler) SetOperationsPending(operations []*ent
 }
 
 func (operationhandler *OperationHandler) ListenOperationChannel() {
-	for op := range operationhandler.OperationChan {
+	for op := range operationhandler.sharedchannel.Operation {
 		if !operationhandler.validateOperation(op) {
 			log.Println("OperationHandler/ListenOperationChannel - invalid operation ", op)
 			continue
 		}
 
-		operationhandler.minerNetworkOperationHandler.NewOperationsChan <- op
+		operationhandler.sharedchannel.BroadcastOperation <- op
 
 		operationhandler.operations = append(operationhandler.operations, op)
 
