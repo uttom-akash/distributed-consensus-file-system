@@ -9,9 +9,9 @@ type Tails []*Block
 type ChildBlockHash map[string][]string
 
 type BlockChain struct {
-	Chain          Chain `json:"chain,omitempty"`
-	Tails          Tails `json:"tails,omitempty"`
-	ChildBlockHash ChildBlockHash
+	BlockHashMapper Chain          `json:"block_hash_mapper,omitempty"`
+	Tails           Tails          `json:"tails,omitempty"`
+	BlockTree       ChildBlockHash `json:"block_tree,omitempty"`
 }
 
 func NewBlockchain() *BlockChain {
@@ -25,15 +25,15 @@ func NewBlockchain() *BlockChain {
 	tails = append(tails, genesisBlock)
 
 	return &BlockChain{
-		Chain:          chain,
-		Tails:          tails,
-		ChildBlockHash: childBlockHash,
+		BlockHashMapper: chain,
+		Tails:           tails,
+		BlockTree:       childBlockHash,
 	}
 }
 
 func (chain *BlockChain) AddBlock(block *Block) {
-	chain.Chain[block.Hash()] = block
-	chain.ChildBlockHash[block.PrevHash] = append(chain.ChildBlockHash[block.PrevHash], block.Hash())
+	chain.BlockHashMapper[block.Hash()] = block
+	chain.BlockTree[block.PrevHash] = append(chain.BlockTree[block.PrevHash], block.Hash())
 }
 
 // last valid block in longest chain
@@ -55,11 +55,11 @@ func (chain *BlockChain) LastValidBlock() *Block {
 			currentBlockHash := queue.Front().(string)
 			queue.Pop()
 
-			for _, childBlock := range chain.ChildBlockHash[currentBlockHash] {
+			for _, childBlock := range chain.BlockTree[currentBlockHash] {
 				queue.Push(childBlock)
 			}
 
-			lastblock = chain.Chain[currentBlockHash]
+			lastblock = chain.BlockHashMapper[currentBlockHash]
 
 			levelSize--
 		}

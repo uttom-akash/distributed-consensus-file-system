@@ -10,6 +10,7 @@ import (
 	"rfs/handler/chainhandler"
 	"rfs/handler/minehandler"
 	"rfs/models/entity"
+	"rfs/sharedchannel"
 	"sync"
 )
 
@@ -17,14 +18,16 @@ type IPeerHandler interface {
 }
 
 type PeerHandler struct {
-	chainHandler *chainhandler.ChainHandler
-	minerHandler *minehandler.MinerHandler
+	chainHandler  *chainhandler.ChainHandler
+	minerHandler  *minehandler.MinerHandler
+	sharedchannel *sharedchannel.SharedChannel
 }
 
 func NewPeerHandler() *PeerHandler {
 	return &PeerHandler{
-		chainHandler: chainhandler.NewSingletonChainHandler(),
-		minerHandler: minehandler.NewSingletonMinerHandler(),
+		chainHandler:  chainhandler.NewSingletonChainHandler(),
+		sharedchannel: sharedchannel.NewSingletonSharedChannel(),
+		minerHandler:  minehandler.NewSingletonMinerHandler(),
 	}
 }
 
@@ -125,7 +128,7 @@ func (handler *PeerHandler) ListenBlock(rw http.ResponseWriter, req *http.Reques
 		log.Fatalf("PeerHandler/ListenBlock - error decoding block: %s", decodedErr)
 	}
 
-	handler.chainHandler.Addblockchan <- block
+	handler.sharedchannel.Block <- block
 
 	log.Println("PeerHandler/ListenBlock - block is added to channel $handler.chainHandler.Addblockchan$")
 

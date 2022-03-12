@@ -3,26 +3,25 @@ package chainhandler
 import (
 	"fmt"
 	"log"
-	"rfs/handler/minernetworkoperationhandler"
+	"rfs/bclib"
 	"rfs/handler/operationhandler"
 	"rfs/models/entity"
+	"rfs/sharedchannel"
 	"sync"
 )
 
 type ChainHandler struct {
-	chain                        *entity.BlockChain
-	Addblockchan                 chan *entity.Block
-	minerNetworkOperationHandler *minernetworkoperationhandler.MinerNetworkOperationHandler
-	operationHandler             *operationhandler.OperationHandler
+	chain            *entity.BlockChain
+	sharedchannel    *sharedchannel.SharedChannel
+	operationHandler *operationhandler.OperationHandler
 }
 
 func NewChainHandler() *ChainHandler {
 
 	return &ChainHandler{
-		chain:                        entity.NewBlockchain(),
-		Addblockchan:                 make(chan *entity.Block, 2),
-		minerNetworkOperationHandler: minernetworkoperationhandler.NewSingletonMinerNetworkOperationHandler(),
-		operationHandler:             operationhandler.NewSingletonOperationHandler(),
+		chain:            entity.NewBlockchain(),
+		sharedchannel:    sharedchannel.NewSingletonSharedChannel(),
+		operationHandler: operationhandler.NewSingletonOperationHandler(),
 	}
 }
 
@@ -71,7 +70,7 @@ func (chainhandler *ChainHandler) GetLongestValidChain() *entity.Block {
 func (chainhandler *ChainHandler) AddBlock() error {
 	log.Println("ChainHandler/AddBlock - In")
 
-	for block := range chainhandler.Addblockchan {
+	for block := range chainhandler.sharedchannel.Block {
 
 		log.Println("ChainHandler/AddBlock - Processing block", block)
 
@@ -97,7 +96,7 @@ func (chainhandler *ChainHandler) AddBlock() error {
 		chainhandler.operationHandler.SetOperationsPending(block.Operations)
 		chainhandler.chain.AddBlock(block)
 
-		chainhandler.minerNetworkOperationHandler.NewBlocksChan <- block
+		chainhandler.sharedchannel.BroadcastBlock <- block
 
 		log.Println("ChainHandler/AddBlock - successfully added block ", block)
 	}
@@ -110,11 +109,11 @@ func (chainhandler *ChainHandler) ValidateBlock(block *entity.Block) bool {
 	//Check that the nonce for the block is valid: PoW is correct and has the right difficulty.
 	//Check that the previous block hash points to a legal, previously generated, block.
 
-	if _, alreadyAdded := chainhandler.chain.Chain[block.Hash()]; alreadyAdded {
+	if _, alreadyAdded := chainhandler.chain.BlockHashMapper[block.Hash()]; alreadyAdded {
 		return false
 	}
 
-	if _, hasPerent := chainhandler.chain.Chain[block.PrevHash]; !hasPerent {
+	if _, hasPerent := chainhandler.chain.BlockHashMapper[block.PrevHash]; !hasPerent {
 		return false
 	}
 
@@ -124,4 +123,29 @@ func (chainhandler *ChainHandler) ValidateBlock(block *entity.Block) bool {
 func (chainhandler *ChainHandler) GetChain() *entity.BlockChain {
 
 	return chainhandler.chain
+}
+
+func (chainhandler *ChainHandler) MargeChain(pChain *entity.BlockChain) {
+
+	log.Println("ChainHandler/MargeChain - In ")
+
+	queue := bclib.NewQueue()
+
+	//Todo: Can be improved
+	genesisBlock := entity.CreateGenesisBlock()
+
+	queue.Push(genesisBlock.Hash())
+
+	for !queue.IsEmpty() {
+		currentBlockHash := queue.Front().(string)
+		queue.Pop()
+
+		chainhandler.sharedchannel.Block <- pChain.BlockHashMapper[currentBlockHash]
+
+		for _, childBlock := range pChain.BlockTree[currentBlockHash] {
+			queue.Push(childBlock)
+		}
+	}
+
+	log.Println("ChainHandler/MargeChain - Out ")
 }
