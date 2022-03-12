@@ -9,9 +9,9 @@ type Tails []*Block
 type ChildBlockHash map[string][]string
 
 type BlockChain struct {
-	BlockHashMapper Chain `json:"chain,omitempty"`
-	Tails           Tails `json:"tails,omitempty"`
-	BlockTree       ChildBlockHash
+	BlockHashMapper Chain          `json:"block_hash_mapper,omitempty"`
+	Tails           Tails          `json:"tails,omitempty"`
+	BlockTree       ChildBlockHash `json:"block_tree,omitempty"`
 }
 
 func NewBlockchain() *BlockChain {
