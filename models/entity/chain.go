@@ -10,7 +10,7 @@ type ChildBlockHash map[string][]string
 
 type BlockChain struct {
 	BlockHashMapper BlockHashMapper `json:"block_hash_mapper,omitempty"`
-	Tails           Tails           `json:"tails,omitempty"`
+	Tails           Tails           `json:"-"`
 	BlockTree       ChildBlockHash  `json:"block_tree,omitempty"`
 	GenesisBlock    *Block          `json:"genesis_block,omitempty"`
 }
