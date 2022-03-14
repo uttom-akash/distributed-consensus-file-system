@@ -94,7 +94,7 @@ func (syncHandler *SyncHandler) writeChain() {
 
 	config := config.GetSingletonConfigHandler()
 
-	jsonFile, ioErr := os.Create("./Chain" + strconv.Itoa(config.MinerConfig.MinerId) + ".json")
+	jsonFile, ioErr := os.Create("./storage/chain/Chain" + strconv.Itoa(config.MinerConfig.MinerId) + ".json")
 
 	if ioErr != nil {
 		log.Println("SyncHandler/write - error creating json file ", ioErr)

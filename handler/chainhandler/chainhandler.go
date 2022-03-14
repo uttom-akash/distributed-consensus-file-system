@@ -110,10 +110,12 @@ func (chainhandler *ChainHandler) ValidateBlock(block *entity.Block) bool {
 	//Check that the previous block hash points to a legal, previously generated, block.
 
 	if _, alreadyAdded := chainhandler.chain.BlockHashMapper[block.Hash()]; alreadyAdded {
+		log.Println("ChainHandler/ValidateBlock - block is already added =", block.Hash())
 		return false
 	}
 
 	if _, hasPerent := chainhandler.chain.BlockHashMapper[block.PrevHash]; !hasPerent {
+		log.Println("ChainHandler/ValidateBlock - block doesn't have any parent block ", block.PrevHash)
 		return false
 	}
 
@@ -132,7 +134,7 @@ func (chainhandler *ChainHandler) MargeChain(pChain *entity.BlockChain) {
 	queue := bclib.NewQueue()
 
 	//Todo: Can be improved
-	genesisBlock := entity.CreateGenesisBlock()
+	genesisBlock := chainhandler.chain.GenesisBlock
 
 	queue.Push(genesisBlock.Hash())
 

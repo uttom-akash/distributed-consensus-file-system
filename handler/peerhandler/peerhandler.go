@@ -8,7 +8,6 @@ import (
 	"rfs/bclib"
 	"rfs/config"
 	"rfs/handler/chainhandler"
-	"rfs/handler/minehandler"
 	"rfs/models/entity"
 	"rfs/sharedchannel"
 	"sync"
@@ -19,7 +18,6 @@ type IPeerHandler interface {
 
 type PeerHandler struct {
 	chainHandler  *chainhandler.ChainHandler
-	minerHandler  *minehandler.MinerHandler
 	sharedchannel *sharedchannel.SharedChannel
 }
 
@@ -27,7 +25,6 @@ func NewPeerHandler() *PeerHandler {
 	return &PeerHandler{
 		chainHandler:  chainhandler.NewSingletonChainHandler(),
 		sharedchannel: sharedchannel.NewSingletonSharedChannel(),
-		minerHandler:  minehandler.NewSingletonMinerHandler(),
 	}
 }
 
@@ -108,7 +105,7 @@ func (handler *PeerHandler) ListenOperation(rw http.ResponseWriter, req *http.Re
 		log.Fatalf("PeerHandler/ListenOperation - error decoding operation: %s", decodedErr)
 	}
 
-	handler.minerHandler.AddNewOperation(operation)
+	handler.sharedchannel.Operation <- operation
 
 	log.Println("PeerHandler/ListenOperation - operation is added to channel $handler.minerHandler.AddNewOperation$")
 

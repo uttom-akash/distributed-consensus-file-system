@@ -23,7 +23,7 @@ type MinerHandler struct {
 func NewMinerHandler() *MinerHandler {
 
 	minerHandler := &MinerHandler{
-		genOpBlockTimeout:  2 * time.Minute,
+		genOpBlockTimeout:  3 * time.Minute,
 		genNoOpBlockTime:   time.Now(),
 		cancelNoOpBlockGen: make(chan int),
 		sharedchannel:      sharedchannel.NewSingletonSharedChannel(),
@@ -54,10 +54,6 @@ func NewSingletonMinerHandler() *MinerHandler {
 	}
 
 	return singletonInstance
-}
-
-func (minerHandler *MinerHandler) AddNewOperation(operation *entity.Operation) {
-	minerHandler.sharedchannel.Operation <- operation
 }
 
 func (minerHandler *MinerHandler) MineBlock() {
