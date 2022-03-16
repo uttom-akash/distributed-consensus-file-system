@@ -20,11 +20,11 @@ func main() {
 	sharedchannel := sharedchannel.NewSingletonSharedChannel()
 
 	go func() {
-		time.Sleep(time.Duration(bclib.Random(1, 2)) * time.Minute)
+		time.Sleep(time.Duration(bclib.Random(1, 10)) * time.Minute)
 		sharedchannel.Operation <- entity.NewOperation("first.txt", modelconst.CREATE_FILE, nil)
 	}()
 	go func() {
-		time.Sleep(time.Duration(bclib.Random(2, 4)) * time.Minute)
+		time.Sleep(time.Duration(bclib.Random(10, 20)) * time.Minute)
 		sharedchannel.Operation <- entity.NewOperation("first.txt", modelconst.APPEND_RECORD, []byte("Append please"))
 	}()
 
