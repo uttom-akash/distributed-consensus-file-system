@@ -13,9 +13,6 @@ import (
 	"sync"
 )
 
-type IPeerHandler interface {
-}
-
 type PeerHandler struct {
 	chainHandler  *chainhandler.ChainHandler
 	sharedchannel *sharedchannel.SharedChannel
