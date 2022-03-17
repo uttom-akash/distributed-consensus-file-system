@@ -1,3 +1,5 @@
 package peerhandler
 
-type IPeerhandler interface{}
+type IPeerHandler interface {
+	ListenPeer()
+}

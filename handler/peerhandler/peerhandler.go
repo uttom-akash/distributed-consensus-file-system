@@ -14,7 +14,7 @@ import (
 )
 
 type PeerHandler struct {
-	chainHandler  *chainhandler.ChainHandler
+	chainHandler  chainhandler.IChainHandler
 	sharedchannel *sharedchannel.SharedChannel
 }
 
@@ -26,9 +26,9 @@ func NewPeerHandler() *PeerHandler {
 }
 
 var lock = &sync.Mutex{}
-var singletonInstance *PeerHandler
+var singletonInstance IPeerHandler
 
-func NewSingletonPeerHandler() *PeerHandler {
+func NewSingletonPeerHandler() IPeerHandler {
 
 	if singletonInstance == nil {
 		lock.Lock()
@@ -56,8 +56,8 @@ func (handler *PeerHandler) ListenPeer() {
 
 	rootHandler.HandleFunc("/ping", handler.servePong)
 	rootHandler.HandleFunc("/downloadchain", handler.serveChainDownload)
-	rootHandler.HandleFunc("/operation", handler.ListenOperation)
-	rootHandler.HandleFunc("/block", handler.ListenBlock)
+	rootHandler.HandleFunc("/operation", handler.listenOperation)
+	rootHandler.HandleFunc("/block", handler.listenBlock)
 
 	bclib.HttpListen(http.Server{
 		Addr:    config.MinerConfig.IpAddress + ":" + config.MinerConfig.Port,
@@ -91,7 +91,7 @@ func (handler *PeerHandler) servePong(rw http.ResponseWriter, req *http.Request)
 
 }
 
-func (handler *PeerHandler) ListenOperation(rw http.ResponseWriter, req *http.Request) {
+func (handler *PeerHandler) listenOperation(rw http.ResponseWriter, req *http.Request) {
 	log.Println("PeerHandler/ListenOperation - in")
 
 	operation := new(entity.Operation)
@@ -110,7 +110,7 @@ func (handler *PeerHandler) ListenOperation(rw http.ResponseWriter, req *http.Re
 
 }
 
-func (handler *PeerHandler) ListenBlock(rw http.ResponseWriter, req *http.Request) {
+func (handler *PeerHandler) listenBlock(rw http.ResponseWriter, req *http.Request) {
 
 	log.Println("PeerHandler/ListenBlock - in")
 

@@ -14,20 +14,12 @@ import (
 	"time"
 )
 
-type MinerNetworkOperation interface {
-	DownloadChain()
-
-	DisseminateOperations()
-
-	DisseminateBlocks()
-}
-
 type MinerNetworkOperationHandler struct {
 	sharedchannel *sharedchannel.SharedChannel
-	chainHandler  *chainhandler.ChainHandler
+	chainHandler  chainhandler.IChainHandler
 }
 
-func NewMinerNetworkOperationHandler() *MinerNetworkOperationHandler {
+func NewMinerNetworkOperationHandler() IMinerNetworkOperationHandler {
 	return &MinerNetworkOperationHandler{
 		sharedchannel: sharedchannel.NewSingletonSharedChannel(),
 		chainHandler:  chainhandler.NewSingletonChainHandler(),
@@ -35,9 +27,9 @@ func NewMinerNetworkOperationHandler() *MinerNetworkOperationHandler {
 }
 
 var lock = &sync.Mutex{}
-var singletonInstance *MinerNetworkOperationHandler
+var singletonInstance IMinerNetworkOperationHandler
 
-func NewSingletonMinerNetworkOperationHandler() *MinerNetworkOperationHandler {
+func NewSingletonMinerNetworkOperationHandler() IMinerNetworkOperationHandler {
 
 	if singletonInstance == nil {
 		lock.Lock()

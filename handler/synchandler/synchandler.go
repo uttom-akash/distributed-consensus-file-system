@@ -17,11 +17,11 @@ import (
 )
 
 type SyncHandler struct {
-	mineHandler           *minehandler.MinerHandler
-	chainhandler          *chainhandler.ChainHandler
-	operationhandler      *operationhandler.OperationHandler
-	peerhandler           *peerhandler.PeerHandler
-	minerNetworkOperation *minernetworkoperationhandler.MinerNetworkOperationHandler
+	mineHandler           minehandler.IMinerHandler
+	chainhandler          chainhandler.IChainHandler
+	operationhandler      operationhandler.IOperationHandler
+	peerhandler           peerhandler.IPeerHandler
+	minerNetworkOperation minernetworkoperationhandler.IMinerNetworkOperationHandler
 }
 
 func (syncHandler *SyncHandler) Sync() {
@@ -44,9 +44,9 @@ func (syncHandler *SyncHandler) Sync() {
 }
 
 var lock = &sync.Mutex{}
-var singletonInstance *SyncHandler
+var singletonInstance ISyncHandler
 
-func NewSyncHandler() *SyncHandler {
+func NewSyncHandler() ISyncHandler {
 	return &SyncHandler{
 		mineHandler:           minehandler.NewSingletonMinerHandler(),
 		chainhandler:          chainhandler.NewSingletonChainHandler(),
@@ -56,7 +56,7 @@ func NewSyncHandler() *SyncHandler {
 	}
 }
 
-func NewSingletonSyncHandler() *SyncHandler {
+func NewSingletonSyncHandler() ISyncHandler {
 
 	if singletonInstance == nil {
 		lock.Lock()

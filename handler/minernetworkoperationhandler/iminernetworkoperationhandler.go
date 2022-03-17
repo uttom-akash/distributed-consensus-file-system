@@ -1,4 +1,9 @@
 package minernetworkoperationhandler
 
-type IMinernetworkoperationhandler interface {
+type IMinerNetworkOperationHandler interface {
+	DownloadChain()
+
+	DisseminateOperations()
+
+	DisseminateBlocks()
 }
