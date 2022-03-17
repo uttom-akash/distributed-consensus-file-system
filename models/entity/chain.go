@@ -2,32 +2,33 @@ package entity
 
 import "rfs/bclib"
 
-type Chain map[string]*Block
+type BlockHashMapper map[string]*Block
 
 type Tails []*Block
 
 type ChildBlockHash map[string][]string
 
 type BlockChain struct {
-	BlockHashMapper Chain          `json:"block_hash_mapper,omitempty"`
-	Tails           Tails          `json:"tails,omitempty"`
-	BlockTree       ChildBlockHash `json:"block_tree,omitempty"`
+	BlockHashMapper BlockHashMapper `json:"block_hash_mapper,omitempty"`
+	Tails           Tails           `json:"-"`
+	BlockTree       ChildBlockHash  `json:"block_tree,omitempty"`
+	GenesisBlock    *Block          `json:"genesis_block,omitempty"`
 }
 
 func NewBlockchain() *BlockChain {
-	chain := make(Chain)
+	blockHashMapper := make(BlockHashMapper)
 	tails := make(Tails, 0)
 	childBlockHash := make(ChildBlockHash)
-
 	genesisBlock := CreateGenesisBlock()
 
-	chain[genesisBlock.Hash()] = genesisBlock
+	blockHashMapper[genesisBlock.Hash()] = genesisBlock
 	tails = append(tails, genesisBlock)
 
 	return &BlockChain{
-		BlockHashMapper: chain,
+		BlockHashMapper: blockHashMapper,
 		Tails:           tails,
 		BlockTree:       childBlockHash,
+		GenesisBlock:    genesisBlock,
 	}
 }
 
@@ -42,8 +43,7 @@ func (chain *BlockChain) LastValidBlock() *Block {
 
 	queue := bclib.NewQueue()
 
-	//Todo: Can be improved
-	genesisBlock := CreateGenesisBlock()
+	genesisBlock := chain.GenesisBlock
 
 	queue.Push(genesisBlock.Hash())
 

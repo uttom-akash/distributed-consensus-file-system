@@ -14,7 +14,7 @@ type OperationHandler struct {
 	sharedchannel *sharedchannel.SharedChannel
 }
 
-func NewOperationHandler() *OperationHandler {
+func NewOperationHandler() IOperationHandler {
 	operationHandler := &OperationHandler{
 		operations:    make([]*entity.Operation, 0),
 		sharedchannel: sharedchannel.NewSingletonSharedChannel(),
@@ -24,9 +24,9 @@ func NewOperationHandler() *OperationHandler {
 }
 
 var lock = &sync.Mutex{}
-var singletonInstance *OperationHandler
+var singletonInstance IOperationHandler
 
-func NewSingletonOperationHandler() *OperationHandler {
+func NewSingletonOperationHandler() IOperationHandler {
 
 	if singletonInstance == nil {
 		lock.Lock()

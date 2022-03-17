@@ -13,10 +13,10 @@ import (
 type ChainHandler struct {
 	chain            *entity.BlockChain
 	sharedchannel    *sharedchannel.SharedChannel
-	operationHandler *operationhandler.OperationHandler
+	operationHandler operationhandler.IOperationHandler
 }
 
-func NewChainHandler() *ChainHandler {
+func NewChainHandler() IChainHandler {
 
 	return &ChainHandler{
 		chain:            entity.NewBlockchain(),
@@ -26,9 +26,9 @@ func NewChainHandler() *ChainHandler {
 }
 
 var lock = &sync.Mutex{}
-var chainhandlerInstance *ChainHandler
+var chainhandlerInstance IChainHandler
 
-func NewSingletonChainHandler() *ChainHandler {
+func NewSingletonChainHandler() IChainHandler {
 
 	if chainhandlerInstance == nil {
 		lock.Lock()
@@ -74,7 +74,7 @@ func (chainhandler *ChainHandler) AddBlock() error {
 
 		log.Println("ChainHandler/AddBlock - Processing block", block)
 
-		if !chainhandler.ValidateBlock(block) {
+		if !chainhandler.validateBlock(block) {
 
 			log.Println("ChainHandler/AddBlock - invalid block ", block)
 
@@ -104,16 +104,18 @@ func (chainhandler *ChainHandler) AddBlock() error {
 	return nil
 }
 
-func (chainhandler *ChainHandler) ValidateBlock(block *entity.Block) bool {
+func (chainhandler *ChainHandler) validateBlock(block *entity.Block) bool {
 
 	//Check that the nonce for the block is valid: PoW is correct and has the right difficulty.
 	//Check that the previous block hash points to a legal, previously generated, block.
 
 	if _, alreadyAdded := chainhandler.chain.BlockHashMapper[block.Hash()]; alreadyAdded {
+		log.Println("ChainHandler/ValidateBlock - block is already added =", block.Hash())
 		return false
 	}
 
 	if _, hasPerent := chainhandler.chain.BlockHashMapper[block.PrevHash]; !hasPerent {
+		log.Println("ChainHandler/ValidateBlock - block doesn't have any parent block ", block.PrevHash)
 		return false
 	}
 
@@ -132,7 +134,7 @@ func (chainhandler *ChainHandler) MargeChain(pChain *entity.BlockChain) {
 	queue := bclib.NewQueue()
 
 	//Todo: Can be improved
-	genesisBlock := entity.CreateGenesisBlock()
+	genesisBlock := chainhandler.chain.GenesisBlock
 
 	queue.Push(genesisBlock.Hash())
 

@@ -15,15 +15,15 @@ type MinerHandler struct {
 	genNoOpBlockTime   time.Time
 	cancelNoOpBlockGen chan int
 
-	operationHandler *operationhandler.OperationHandler
-	chainhandler     *chainhandler.ChainHandler
+	operationHandler operationhandler.IOperationHandler
+	chainhandler     chainhandler.IChainHandler
 	sharedchannel    *sharedchannel.SharedChannel
 }
 
-func NewMinerHandler() *MinerHandler {
+func NewMinerHandler() IMinerHandler {
 
 	minerHandler := &MinerHandler{
-		genOpBlockTimeout:  2 * time.Minute,
+		genOpBlockTimeout:  3 * time.Minute,
 		genNoOpBlockTime:   time.Now(),
 		cancelNoOpBlockGen: make(chan int),
 		sharedchannel:      sharedchannel.NewSingletonSharedChannel(),
@@ -35,9 +35,9 @@ func NewMinerHandler() *MinerHandler {
 }
 
 var lock = &sync.Mutex{}
-var singletonInstance *MinerHandler
+var singletonInstance IMinerHandler
 
-func NewSingletonMinerHandler() *MinerHandler {
+func NewSingletonMinerHandler() IMinerHandler {
 
 	if singletonInstance == nil {
 		lock.Lock()
@@ -54,10 +54,6 @@ func NewSingletonMinerHandler() *MinerHandler {
 	}
 
 	return singletonInstance
-}
-
-func (minerHandler *MinerHandler) AddNewOperation(operation *entity.Operation) {
-	minerHandler.sharedchannel.Operation <- operation
 }
 
 func (minerHandler *MinerHandler) MineBlock() {

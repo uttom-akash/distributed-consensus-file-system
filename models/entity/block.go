@@ -39,7 +39,7 @@ func (block *Block) Hash() string {
 
 func NewOpBlock(prevblock *Block, operations []*Operation) *Block {
 
-	time.Sleep(time.Duration(bclib.Random(40, 60)) * time.Second)
+	time.Sleep(time.Duration(bclib.Random(3, 5)) * time.Minute)
 
 	config := config.GetSingletonConfigHandler()
 
@@ -54,7 +54,7 @@ func NewOpBlock(prevblock *Block, operations []*Operation) *Block {
 
 func NewNoOpBlock(prevblock *Block) *Block {
 
-	time.Sleep(time.Duration(bclib.Random(20, 40)) * time.Second)
+	time.Sleep(time.Duration(bclib.Random(2, 4)) * time.Minute)
 
 	config := config.GetSingletonConfigHandler()
 

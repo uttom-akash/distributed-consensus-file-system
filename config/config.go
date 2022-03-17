@@ -34,7 +34,7 @@ var configs = []MinerConfig{
 		MinerId:   3,
 		IpAddress: "127.0.0.1",
 		Port:      "8082",
-		Peers:     []int{4, 2},
+		Peers:     []int{4, 1},
 	},
 	{
 		MinerId:   4,
