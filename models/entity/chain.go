@@ -49,6 +49,7 @@ func (chain *BlockChain) LastValidBlock() *Block {
 
 	for !queue.IsEmpty() {
 		levelSize := queue.Size()
+		var strongestBlock *Block
 
 		for levelSize > 0 {
 
@@ -59,9 +60,17 @@ func (chain *BlockChain) LastValidBlock() *Block {
 				queue.Push(childBlock)
 			}
 
-			lastblock = chain.BlockHashMapper[currentBlockHash]
+			//Todo : check if strongestBlock null
+			if strongestBlock.PowDifficulty() < chain.BlockHashMapper[currentBlockHash].PowDifficulty() {
+				strongestBlock = chain.BlockHashMapper[currentBlockHash]
+			}
 
 			levelSize--
+		}
+
+		//Todo : check if strongestBlock null
+		if strongestBlock != nil {
+			lastblock = strongestBlock
 		}
 	}
 

@@ -39,7 +39,7 @@ func (block *Block) Hash() string {
 
 func NewOpBlock(prevblock *Block, operations []*Operation) *Block {
 
-	time.Sleep(time.Duration(bclib.Random(3, 5)) * time.Minute)
+	time.Sleep(time.Duration(bclib.Random(3, 4)) * time.Minute)
 
 	config := config.GetSingletonConfigHandler()
 
@@ -54,7 +54,7 @@ func NewOpBlock(prevblock *Block, operations []*Operation) *Block {
 
 func NewNoOpBlock(prevblock *Block) *Block {
 
-	time.Sleep(time.Duration(bclib.Random(2, 4)) * time.Minute)
+	time.Sleep(time.Duration(bclib.Random(2, 2)) * time.Minute)
 
 	config := config.GetSingletonConfigHandler()
 
@@ -71,4 +71,18 @@ func CreateGenesisBlock() *Block {
 	return &Block{
 		SerialNo: 1,
 	}
+}
+
+func (block *Block) PowDifficulty() int {
+	blockHash := block.Hash()
+	hashLength := len(blockHash)
+	difficulty := 0
+
+	for ; difficulty < hashLength; difficulty++ {
+		if blockHash[difficulty] != '0' {
+			break
+		}
+	}
+
+	return difficulty
 }

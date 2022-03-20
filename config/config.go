@@ -7,14 +7,28 @@ import (
 )
 
 type MinerConfig struct {
-	MinerId   int
-	IpAddress string
-	Port      string
-	Peers     []int
+	MinerId             int
+	IpAddress           string //Todo : IncomingMinersAddr ip:port
+	Port                string
+	Peers               []int
+	OutgoingMinersIP    string
+	IncomingClientsAddr string
 }
 
 type ConsoleArg struct {
 	MinerId int
+}
+
+type SettingsConfig struct {
+	MinedCoinsPerOpBlock   uint8  // The number of record coins mined for an op block
+	MinedCoinsPerNoOpBlock uint8  // The number of record coins mined for a no-op block
+	NumCoinsPerFileCreate  uint8  // The number of record coins charged for creating a file
+	GenOpBlockTimeout      uint8  // Time in milliseconds, the minimum time between op block mining (see diagram above).
+	GenesisBlockHash       string // The genesis (first) block MD5 hash for this blockchain
+	PowPerOpBlock          uint8  // The op block difficulty (proof of work setting: number of zeroes)
+	PowPerNoOpBlock        uint8  // The no-op block difficulty (proof of work setting: number of zeroes)
+	ConfirmsPerFileCreate  uint8  // The number of confirmations for a create file operation (the number of blocks that must follow the block containing a create file operation along longest chain before the CreateFile call can return successfully)
+	ConfirmsPerFileAppend  uint8  // The number of confirmations for an append operation
 }
 
 var configs = []MinerConfig{
@@ -43,24 +57,24 @@ var configs = []MinerConfig{
 	},
 }
 
-type ConfigHandler struct {
-	MinerConfig   MinerConfig
-	ConsoleConfig ConsoleArg
+type Configuration struct {
+	MinerConfig    MinerConfig
+	ConsoleConfig  ConsoleArg
+	SettingsConfig SettingsConfig
 }
 
 var lock = &sync.Mutex{}
-var confighandlerInstance *ConfigHandler
+var confighandlerInstance *Configuration
 
-func NewConfigHandler(consoleArg ConsoleArg) *ConfigHandler {
-	minerConfig := GetConfig(consoleArg.MinerId)
-
-	return &ConfigHandler{
-		MinerConfig:   minerConfig,
-		ConsoleConfig: consoleArg,
+func NewConfigHandler(consoleArg ConsoleArg) *Configuration {
+	return &Configuration{
+		MinerConfig:    GetConfig(consoleArg.MinerId),
+		ConsoleConfig:  consoleArg,
+		SettingsConfig: GetSettingsConfig(),
 	}
 }
 
-func NewSingletonConfigHandler(consoleArg ConsoleArg) *ConfigHandler {
+func NewSingletonConfigHandler(consoleArg ConsoleArg) *Configuration {
 
 	if confighandlerInstance == nil {
 		lock.Lock()
@@ -79,7 +93,7 @@ func NewSingletonConfigHandler(consoleArg ConsoleArg) *ConfigHandler {
 	return confighandlerInstance
 }
 
-func GetSingletonConfigHandler() *ConfigHandler {
+func GetSingletonConfigHandler() *Configuration {
 	if confighandlerInstance == nil {
 		log.Fatal("ConfigHandler is not created yet.")
 	}
@@ -92,4 +106,19 @@ func GetConfig(id int) MinerConfig {
 		log.Println("miner Id ", id)
 	}
 	return configs[id-1]
+}
+
+func GetSettingsConfig() SettingsConfig {
+
+	return SettingsConfig{
+		MinedCoinsPerOpBlock:   3,
+		MinedCoinsPerNoOpBlock: 3,
+		NumCoinsPerFileCreate:  2,
+		GenOpBlockTimeout:      3,
+		GenesisBlockHash:       "",
+		PowPerOpBlock:          1,
+		PowPerNoOpBlock:        0,
+		ConfirmsPerFileCreate:  3,
+		ConfirmsPerFileAppend:  5,
+	}
 }

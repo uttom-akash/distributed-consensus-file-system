@@ -2,33 +2,32 @@ package minehandler
 
 import (
 	"fmt"
+	"rfs/config"
 	"rfs/handler/chainhandler"
 	"rfs/handler/operationhandler"
 	"rfs/models/entity"
+	"rfs/pow"
 	"rfs/sharedchannel"
 	"sync"
 	"time"
 )
 
 type MinerHandler struct {
-	genOpBlockTimeout  time.Duration
-	genNoOpBlockTime   time.Time
-	cancelNoOpBlockGen chan int
-
+	config           config.Configuration
 	operationHandler operationhandler.IOperationHandler
 	chainhandler     chainhandler.IChainHandler
+	proofOfWork      pow.IProofOfWork
 	sharedchannel    *sharedchannel.SharedChannel
 }
 
 func NewMinerHandler() IMinerHandler {
 
 	minerHandler := &MinerHandler{
-		genOpBlockTimeout:  3 * time.Minute,
-		genNoOpBlockTime:   time.Now(),
-		cancelNoOpBlockGen: make(chan int),
-		sharedchannel:      sharedchannel.NewSingletonSharedChannel(),
-		operationHandler:   operationhandler.NewSingletonOperationHandler(),
-		chainhandler:       chainhandler.NewSingletonChainHandler(),
+		config:           *config.GetSingletonConfigHandler(),
+		sharedchannel:    sharedchannel.NewSingletonSharedChannel(),
+		operationHandler: operationhandler.NewSingletonOperationHandler(),
+		proofOfWork:      pow.NewSingletonProofOfWorkHandler(),
+		chainhandler:     chainhandler.NewSingletonChainHandler(),
 	}
 
 	return minerHandler
@@ -59,7 +58,7 @@ func NewSingletonMinerHandler() IMinerHandler {
 func (minerHandler *MinerHandler) MineBlock() {
 	for {
 
-		time.Sleep(minerHandler.genOpBlockTimeout)
+		time.Sleep(time.Duration(minerHandler.config.SettingsConfig.GenOpBlockTimeout) * time.Minute)
 
 		// 1 : last block
 		lastblock := minerHandler.chainhandler.GetLongestValidChain()
@@ -81,12 +80,16 @@ func (minerHandler *MinerHandler) generateOpBlock(newOperations []*entity.Operat
 
 	newOpBlock := entity.NewOpBlock(lastblock, newOperations)
 
+	minerHandler.proofOfWork.DoProofWork(newOpBlock, int(minerHandler.config.SettingsConfig.PowPerOpBlock))
+
 	minerHandler.sharedchannel.Block <- newOpBlock
 }
 
 func (minerHandler *MinerHandler) generateNoOpBlock(lastblock *entity.Block) {
 
 	newNoOpBlock := entity.NewNoOpBlock(lastblock)
+
+	minerHandler.proofOfWork.DoProofWork(newNoOpBlock, int(minerHandler.config.SettingsConfig.PowPerNoOpBlock))
 
 	minerHandler.sharedchannel.Block <- newNoOpBlock
 }
