@@ -58,11 +58,11 @@ func (OperationHandler *OperationHandler) GetNewOperations() []*entity.Operation
 	return newOperations
 }
 
-func (OperationHandler *OperationHandler) SetOperationsPending(operations []*entity.Operation) {
+func (OperationHandler *OperationHandler) SetOperationsStatus(operations []*entity.Operation, opState modelconst.OperationState) {
 
 	for _, op := range operations {
 		if op.State == modelconst.NEW {
-			op.State = modelconst.PENDING
+			op.State = opState
 		}
 	}
 }

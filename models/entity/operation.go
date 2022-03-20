@@ -15,7 +15,7 @@ type Operation struct {
 	Record        [512]byte
 	MinerID       int
 	TimeStamp     time.Time
-	State         modelconst.OperationState
+	State         modelconst.OperationState //Todo : this field shouldn't be in block
 }
 
 func NewOperation(fname string, operationType modelconst.OperationType, record []byte) *Operation {

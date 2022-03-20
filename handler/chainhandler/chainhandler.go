@@ -3,9 +3,12 @@ package chainhandler
 import (
 	"fmt"
 	"log"
+	"math"
 	"rfs/bclib"
+	"rfs/config"
 	"rfs/handler/operationhandler"
 	"rfs/models/entity"
+	"rfs/models/modelconst"
 	"rfs/sharedchannel"
 	"sync"
 )
@@ -93,7 +96,12 @@ func (chainhandler *ChainHandler) AddBlock() error {
 		// 	}
 		// }
 
-		chainhandler.operationHandler.SetOperationsPending(block.Operations)
+		chainhandler.operationHandler.SetOperationsStatus(block.Operations, modelconst.PENDING)
+
+		operationsTobeConfirmed := chainhandler.GetOperationsTobeConfirmed(block)
+
+		chainhandler.operationHandler.SetOperationsStatus(operationsTobeConfirmed, modelconst.CONFIRMED)
+
 		chainhandler.chain.AddBlock(block)
 
 		chainhandler.sharedchannel.BroadcastBlock <- block
@@ -150,4 +158,40 @@ func (chainhandler *ChainHandler) MargeChain(pChain *entity.BlockChain) {
 	}
 
 	log.Println("ChainHandler/MargeChain - Out ")
+}
+
+func (chainhandler *ChainHandler) GetOperationsTobeConfirmed(block *entity.Block) []*entity.Operation {
+
+	log.Println("ChainHandler/GetOperationsTobeConfirmed - In ")
+
+	config := config.GetSingletonConfigHandler()
+
+	var operations []*entity.Operation
+
+	iterator := block
+
+	for i := 0; i <= int(math.Max(float64(config.SettingsConfig.ConfirmsPerFileCreate), float64(config.SettingsConfig.ConfirmsPerFileAppend))); i++ {
+
+		if i == int(config.SettingsConfig.ConfirmsPerFileAppend) {
+			for _, o := range iterator.Operations {
+				if o.OperationType == modelconst.APPEND_RECORD {
+					operations = append(operations, o)
+				}
+			}
+		}
+
+		if i == int(config.SettingsConfig.ConfirmsPerFileAppend) {
+			for _, o := range iterator.Operations {
+				if o.OperationType == modelconst.CREATE_FILE {
+					operations = append(operations, o)
+				}
+			}
+		}
+
+		iterator = chainhandler.chain.BlockHashMapper[iterator.PrevHash]
+	}
+
+	log.Println("ChainHandler/GetOperationsTobeConfirmed - Out ")
+
+	return operations
 }

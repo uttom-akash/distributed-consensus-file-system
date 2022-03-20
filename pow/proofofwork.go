@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"rfs/models/entity"
 	"sync"
 )
@@ -44,6 +45,8 @@ func (workproof ProofOfWork) DoProofWork(block *entity.Block, minDifficultyLvl i
 	for {
 		block.Nonce = nonce
 		difficultyLevel := block.PowDifficulty()
+
+		log.Println("ProofOfWork/DoProofWork- none: ", nonce, " -difficulty level: ", difficultyLevel, " -minimum difficulty level: ", minDifficultyLvl)
 
 		if difficultyLevel >= minDifficultyLvl {
 			break

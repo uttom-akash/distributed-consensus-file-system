@@ -7,4 +7,5 @@ type IChainHandler interface {
 	GetLongestValidChain() *entity.Block
 	AddBlock() error
 	MargeChain(pChain *entity.BlockChain)
+	GetOperationsTobeConfirmed(block *entity.Block) []*entity.Operation
 }
