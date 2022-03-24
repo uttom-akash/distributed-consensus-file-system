@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"rfs/models/entity"
+	"rfs/models/message"
 	"rfs/models/modelconst"
 	"rfs/sharedchannel"
 	"sync"
@@ -46,38 +47,48 @@ func NewSingletonOperationHandler() IOperationHandler {
 }
 
 func (OperationHandler *OperationHandler) GetNewOperations() []*entity.Operation {
-	var newOperations []*entity.Operation
+	newOperations := OperationHandler.operations
 
-	for _, op := range OperationHandler.operations {
-		if op.State == modelconst.NEW {
-			op.State = modelconst.PENDING
-			newOperations = append(newOperations, op)
-		}
-	}
+	OperationHandler.operations = make([]*entity.Operation, 0)
 
 	return newOperations
 }
 
 func (OperationHandler *OperationHandler) SetOperationsStatus(operations []*entity.Operation, opState modelconst.OperationState) {
 
+	// for _, op := range operations {
+	// 	if op.State == modelconst.NEW {
+	// 		op.State = opState
+	// 	}
+	// }
+}
+
+//Todo: check and resolve concurrancy
+func (operationHandler *OperationHandler) RemoveOperations(operations []*entity.Operation) {
 	for _, op := range operations {
-		if op.State == modelconst.NEW {
-			op.State = opState
-		}
+		operationHandler.sharedchannel.Operation <- message.NewOperationMsg(op, message.REMOVE)
 	}
 }
 
 func (operationhandler *OperationHandler) ListenOperationChannel() {
 	for op := range operationhandler.sharedchannel.Operation {
-		if !operationhandler.validateOperation(op) {
-			log.Println("OperationHandler/ListenOperationChannel - invalid operation ", op)
-			continue
+		if op.Command == message.ADD {
+			if !operationhandler.validateOperation(op.Operation) {
+				log.Println("OperationHandler/ListenOperationChannel - invalid operation ", op)
+				continue
+			}
+
+			operationhandler.sharedchannel.BroadcastOperation <- op.Operation
+
+			operationhandler.operations = append(operationhandler.operations, op.Operation)
+
+		} else {
+			for index, operation := range operationhandler.operations {
+				if op.Operation.OperationId == operation.OperationId {
+					operationhandler.operations = append(operationhandler.operations[:index], operationhandler.operations[index+1:]...)
+				}
+			}
 		}
-
-		operationhandler.sharedchannel.BroadcastOperation <- op
-
-		operationhandler.operations = append(operationhandler.operations, op)
-
 	}
 }
 

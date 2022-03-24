@@ -9,6 +9,7 @@ import (
 	"rfs/config"
 	"rfs/handler/chainhandler"
 	"rfs/models/entity"
+	"rfs/models/message"
 	"rfs/sharedchannel"
 	"sync"
 )
@@ -102,7 +103,7 @@ func (handler *PeerHandler) listenOperation(rw http.ResponseWriter, req *http.Re
 		log.Fatalf("PeerHandler/ListenOperation - error decoding operation: %s", decodedErr)
 	}
 
-	handler.sharedchannel.Operation <- operation
+	handler.sharedchannel.Operation <- message.NewOperationMsg(operation, message.ADD)
 
 	log.Println("PeerHandler/ListenOperation - operation is added to channel $handler.minerHandler.AddNewOperation$")
 

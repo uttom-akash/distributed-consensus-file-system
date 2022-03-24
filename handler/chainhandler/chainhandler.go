@@ -86,21 +86,14 @@ func (chainhandler *ChainHandler) AddBlock() error {
 
 		log.Println("ChainHandler/AddBlock - successfully validated block ", block)
 
-		// Todo : needs to define better. suppose how do we add two block in same previous block
-		// for index, tail := range chainhandler.chain.Tails {
-		// 	if tail.Hash() == block.PrevHash {
-
-		// 		block.SerialNo = tail.SerialNo + 1
-		// 		chainhandler.chain.Tails[index] = block
-		// 		break
-		// 	}
-		// }
-
 		chainhandler.operationHandler.SetOperationsStatus(block.Operations, modelconst.PENDING)
 
-		operationsTobeConfirmed := chainhandler.GetOperationsTobeConfirmed(block)
+		operationsTobeRemoved := chainhandler.GetOperationsTobeRemoved(block)
+		chainhandler.operationHandler.RemoveOperations(operationsTobeRemoved)
 
-		chainhandler.operationHandler.SetOperationsStatus(operationsTobeConfirmed, modelconst.CONFIRMED)
+		// operationsTobeConfirmed := chainhandler.GetOperationsTobeConfirmed(block) //Todo: notify client
+
+		// chainhandler.operationHandler.SetOperationsStatus(operationsTobeConfirmed, modelconst.CONFIRMED)
 
 		chainhandler.chain.AddBlock(block)
 
@@ -169,8 +162,9 @@ func (chainhandler *ChainHandler) GetOperationsTobeConfirmed(block *entity.Block
 	var operations []*entity.Operation
 
 	iterator := block
+	hasParent := true
 
-	for i := 0; i <= int(math.Max(float64(config.SettingsConfig.ConfirmsPerFileCreate), float64(config.SettingsConfig.ConfirmsPerFileAppend))); i++ {
+	for i := 0; hasParent && i <= int(math.Max(float64(config.SettingsConfig.ConfirmsPerFileCreate), float64(config.SettingsConfig.ConfirmsPerFileAppend))); i++ {
 
 		if i == int(config.SettingsConfig.ConfirmsPerFileAppend) {
 			for _, o := range iterator.Operations {
@@ -188,10 +182,36 @@ func (chainhandler *ChainHandler) GetOperationsTobeConfirmed(block *entity.Block
 			}
 		}
 
-		iterator = chainhandler.chain.BlockHashMapper[iterator.PrevHash]
+		iterator, hasParent = chainhandler.chain.BlockHashMapper[iterator.PrevHash]
 	}
 
 	log.Println("ChainHandler/GetOperationsTobeConfirmed - Out ")
+
+	return operations
+}
+
+func (chainhandler *ChainHandler) GetOperationsTobeRemoved(block *entity.Block) []*entity.Operation {
+
+	log.Println("ChainHandler/GetOperationsTobeRemoved - In ")
+
+	config := config.GetSingletonConfigHandler()
+	numberOfblockToCheck := int(math.Max(float64(config.SettingsConfig.ConfirmsPerFileCreate), float64(config.SettingsConfig.ConfirmsPerFileAppend)))
+
+	var operations []*entity.Operation
+
+	blockInLongestChain := chainhandler.chain.LastValidBlock()
+	iterator := block
+	hasParent := true
+
+	if blockInLongestChain.Hash() == block.PrevHash {
+		for i := 0; i <= numberOfblockToCheck && hasParent; i++ {
+			operations = append(operations, iterator.Operations...)
+
+			iterator, hasParent = chainhandler.chain.BlockHashMapper[iterator.PrevHash]
+		}
+	}
+
+	log.Println("ChainHandler/GetOperationsTobeRemoved - Out ")
 
 	return operations
 }

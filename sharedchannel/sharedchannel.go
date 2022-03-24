@@ -3,6 +3,7 @@ package sharedchannel
 import (
 	"fmt"
 	"rfs/models/entity"
+	"rfs/models/message"
 	"sync"
 )
 
@@ -10,7 +11,7 @@ type SharedChannel struct {
 	BroadcastBlock     chan *entity.Block
 	Block              chan *entity.Block
 	BroadcastOperation chan *entity.Operation
-	Operation          chan *entity.Operation
+	Operation          chan *message.OperationChanMsg
 }
 
 func NewSharedChannel() *SharedChannel {
@@ -18,7 +19,7 @@ func NewSharedChannel() *SharedChannel {
 		BroadcastBlock:     make(chan *entity.Block, 1),
 		Block:              make(chan *entity.Block, 1),
 		BroadcastOperation: make(chan *entity.Operation, 1),
-		Operation:          make(chan *entity.Operation, 1),
+		Operation:          make(chan *message.OperationChanMsg, 1),
 	}
 }
 

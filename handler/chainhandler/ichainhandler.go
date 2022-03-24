@@ -8,4 +8,5 @@ type IChainHandler interface {
 	AddBlock() error
 	MargeChain(pChain *entity.BlockChain)
 	GetOperationsTobeConfirmed(block *entity.Block) []*entity.Operation
+	GetOperationsTobeRemoved(block *entity.Block) []*entity.Operation
 }

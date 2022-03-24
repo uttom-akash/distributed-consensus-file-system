@@ -46,7 +46,7 @@ func (workproof ProofOfWork) DoProofWork(block *entity.Block, minDifficultyLvl i
 		block.Nonce = nonce
 		difficultyLevel := block.PowDifficulty()
 
-		log.Println("ProofOfWork/DoProofWork- none: ", nonce, " -difficulty level: ", difficultyLevel, " -minimum difficulty level: ", minDifficultyLvl)
+		log.Println("ProofOfWork/DoProofWork- nonce: ", nonce, " -difficulty level: ", difficultyLevel, " -minimum difficulty level: ", minDifficultyLvl)
 
 		if difficultyLevel >= minDifficultyLvl {
 			break

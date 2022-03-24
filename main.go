@@ -6,6 +6,7 @@ import (
 	"rfs/config"
 	"rfs/handler/synchandler"
 	"rfs/models/entity"
+	"rfs/models/message"
 	"rfs/models/modelconst"
 	"rfs/sharedchannel"
 	"time"
@@ -21,11 +22,11 @@ func main() {
 
 	go func() {
 		time.Sleep(time.Duration(bclib.Random(1, 10)) * time.Minute)
-		sharedchannel.Operation <- entity.NewOperation("first.txt", modelconst.CREATE_FILE, nil)
+		sharedchannel.Operation <- message.NewOperationMsg(entity.NewOperation("first.txt", modelconst.CREATE_FILE, nil), message.ADD)
 	}()
 	go func() {
 		time.Sleep(time.Duration(bclib.Random(10, 20)) * time.Minute)
-		sharedchannel.Operation <- entity.NewOperation("first.txt", modelconst.APPEND_RECORD, []byte("Append please"))
+		sharedchannel.Operation <- message.NewOperationMsg(entity.NewOperation("first.txt", modelconst.APPEND_RECORD, []byte("Append please")), message.ADD)
 	}()
 
 	synchandler := synchandler.NewSingletonSyncHandler()
