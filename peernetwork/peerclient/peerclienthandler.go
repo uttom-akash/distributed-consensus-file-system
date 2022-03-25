@@ -1,4 +1,4 @@
-package minernetworkoperationhandler
+package peerclient
 
 import (
 	"bytes"
@@ -14,22 +14,22 @@ import (
 	"time"
 )
 
-type MinerNetworkOperationHandler struct {
+type PeerClientHandler struct {
 	sharedchannel *sharedchannel.SharedChannel
 	chainHandler  chainhandler.IChainHandler
 }
 
-func NewMinerNetworkOperationHandler() IMinerNetworkOperationHandler {
-	return &MinerNetworkOperationHandler{
+func NewPeerClientHandler() IPeerClientHandler {
+	return &PeerClientHandler{
 		sharedchannel: sharedchannel.NewSingletonSharedChannel(),
 		chainHandler:  chainhandler.NewSingletonChainHandler(),
 	}
 }
 
 var lock = &sync.Mutex{}
-var singletonInstance IMinerNetworkOperationHandler
+var singletonInstance IPeerClientHandler
 
-func NewSingletonMinerNetworkOperationHandler() IMinerNetworkOperationHandler {
+func NewSingletonPeerClientHandler() IPeerClientHandler {
 
 	if singletonInstance == nil {
 		lock.Lock()
@@ -37,7 +37,7 @@ func NewSingletonMinerNetworkOperationHandler() IMinerNetworkOperationHandler {
 
 		if singletonInstance == nil {
 			fmt.Println("Creating single instance now.")
-			singletonInstance = NewMinerNetworkOperationHandler()
+			singletonInstance = NewPeerClientHandler()
 		} else {
 			fmt.Println("Single instance already created.")
 		}
@@ -48,7 +48,7 @@ func NewSingletonMinerNetworkOperationHandler() IMinerNetworkOperationHandler {
 	return singletonInstance
 }
 
-func (handler *MinerNetworkOperationHandler) DownloadChain() {
+func (handler *PeerClientHandler) DownloadChain() {
 
 	con := config.GetSingletonConfigHandler()
 
@@ -79,20 +79,20 @@ func (handler *MinerNetworkOperationHandler) DownloadChain() {
 
 }
 
-func (handler *MinerNetworkOperationHandler) DisseminateOperations() {
-	log.Println("MinerNetworkOperation/DisseminateOperations - In")
+func (handler *PeerClientHandler) DisseminateOperations() {
+	log.Println("PeerClientHandler/DisseminateOperations - In")
 
 	con := config.GetSingletonConfigHandler()
 
-	for operation := range handler.sharedchannel.BroadcastOperation {
+	for operation := range handler.sharedchannel.BroadcastOperationChan {
 		for _, peerId := range con.MinerConfig.Peers {
 
-			log.Println("MinerNetworkOperation/DisseminateOperations - disseminating to ", peerId, "; operation : ", operation)
+			log.Println("PeerClientHandler/DisseminateOperations - disseminating to ", peerId, "; operation : ", operation)
 
 			encodedOperation, encoedeErr := json.Marshal(operation)
 
 			if encoedeErr != nil {
-				log.Println("MinerNetworkOperation/DisseminateOperations - error encoding operation", peerId, encoedeErr)
+				log.Println("PeerClientHandler/DisseminateOperations - error encoding operation", peerId, encoedeErr)
 				continue
 			}
 
@@ -100,34 +100,34 @@ func (handler *MinerNetworkOperationHandler) DisseminateOperations() {
 			resp, httpErr := http.Post("http://"+peerconfig.IpAddress+":"+peerconfig.Port+"/operation", "application/json", bytes.NewBuffer(encodedOperation))
 
 			if httpErr != nil {
-				log.Println("MinerNetworkOperation/DisseminateOperations - error Disseminating operation", peerId, httpErr)
+				log.Println("PeerClientHandler/DisseminateOperations - error Disseminating operation", peerId, httpErr)
 				continue
 			}
 
-			log.Println("MinerNetworkOperation/DisseminateOperations - dissemination success ", resp.StatusCode)
+			log.Println("PeerClientHandler/DisseminateOperations - dissemination success ", resp.StatusCode)
 
 			time.Sleep(3 * time.Second)
 		}
 	}
 
-	log.Println("MinerNetworkOperation/DisseminateOperations - Out")
+	log.Println("PeerClientHandler/DisseminateOperations - Out")
 }
 
-func (handler *MinerNetworkOperationHandler) DisseminateBlocks() {
+func (handler *PeerClientHandler) DisseminateBlocks() {
 
-	log.Println("MinerNetworkOperation/DisseminateBlocks - In")
+	log.Println("PeerClientHandler/DisseminateBlocks - In")
 
 	con := config.GetSingletonConfigHandler()
 
-	for block := range handler.sharedchannel.BroadcastBlock {
+	for block := range handler.sharedchannel.BroadcastBlockChan {
 		for _, peerId := range con.MinerConfig.Peers {
 
-			log.Println("MinerNetworkOperation/DisseminateBlocks - disseminating to ", peerId, "; block : ", block)
+			log.Println("PeerClientHandler/DisseminateBlocks - disseminating to ", peerId, "; block : ", block)
 
 			encodedOperation, encodedErr := json.Marshal(block)
 
 			if encodedErr != nil {
-				log.Println("MinerNetworkOperation/DisseminateBlocks - error encoding block ", peerId, encodedErr)
+				log.Println("PeerClientHandler/DisseminateBlocks - error encoding block ", peerId, encodedErr)
 				continue
 			}
 
@@ -135,15 +135,15 @@ func (handler *MinerNetworkOperationHandler) DisseminateBlocks() {
 			resp, httpErr := http.Post("http://"+peerconfig.IpAddress+":"+peerconfig.Port+"/block", "application/json", bytes.NewBuffer(encodedOperation))
 
 			if httpErr != nil {
-				log.Println("MinerNetworkOperation/DisseminateBlocks - Error disseminating block ", peerId, httpErr)
+				log.Println("PeerClientHandler/DisseminateBlocks - Error disseminating block ", peerId, httpErr)
 				continue
 			}
 
-			log.Println("MinerNetworkOperation/DisseminateBlocks - dissemination success ", resp.StatusCode)
+			log.Println("PeerClientHandler/DisseminateBlocks - dissemination success ", resp.StatusCode)
 
 			time.Sleep(3 * time.Second)
 		}
 	}
 
-	log.Println("MinerNetworkOperation/DisseminateBlocks - Out")
+	log.Println("PeerClientHandler/DisseminateBlocks - Out")
 }

@@ -1,17 +1,17 @@
 package synchandler
 
 import (
+	"cfs/config"
+	"cfs/corehandler/chainhandler"
+	"cfs/corehandler/minehandler"
+	"cfs/corehandler/operationhandler"
+	"cfs/peernetwork/peerclient"
+	"cfs/peernetwork/peerserver"
 	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
-	"rfs/config"
-	"rfs/handler/chainhandler"
-	"rfs/handler/minehandler"
-	"rfs/handler/minernetworkoperationhandler"
-	"rfs/handler/operationhandler"
-	"rfs/handler/peerhandler"
 	"strconv"
 	"sync"
 )
@@ -20,8 +20,8 @@ type SyncHandler struct {
 	mineHandler           minehandler.IMinerHandler
 	chainhandler          chainhandler.IChainHandler
 	operationhandler      operationhandler.IOperationHandler
-	peerhandler           peerhandler.IPeerHandler
-	minerNetworkOperation minernetworkoperationhandler.IMinerNetworkOperationHandler
+	peerhandler           peerserver.IPeerServerHandler
+	minerNetworkOperation peerclient.IPeerClientHandler
 }
 
 func (syncHandler *SyncHandler) Sync() {
@@ -51,8 +51,8 @@ func NewSyncHandler() ISyncHandler {
 		mineHandler:           minehandler.NewSingletonMinerHandler(),
 		chainhandler:          chainhandler.NewSingletonChainHandler(),
 		operationhandler:      operationhandler.NewSingletonOperationHandler(),
-		peerhandler:           peerhandler.NewSingletonPeerHandler(),
-		minerNetworkOperation: minernetworkoperationhandler.NewSingletonMinerNetworkOperationHandler(),
+		peerhandler:           peerserver.NewSingletonPeerServerHandler(),
+		minerNetworkOperation: peerclient.NewSingletonPeerClientHandler(),
 	}
 }
 

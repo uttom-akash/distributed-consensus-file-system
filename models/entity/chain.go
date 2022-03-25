@@ -1,6 +1,6 @@
 package entity
 
-import "rfs/bclib"
+import "cfs/cfslib"
 
 type BlockHashMapper map[string]*Block
 
@@ -41,7 +41,7 @@ func (chain *BlockChain) AddBlock(block *Block) {
 func (chain *BlockChain) LastValidBlock() *Block {
 	var lastblock *Block
 
-	queue := bclib.NewQueue()
+	queue := cfslib.NewQueue()
 
 	genesisBlock := chain.GenesisBlock
 

@@ -1,14 +1,4 @@
-/*
-
-This package specifies the application's interface to the distributed
-records system (RFS) to be used in project 1 of UBC CS 416 2018W1.
-
-You are not allowed to change this API, but you do have to implement
-it.
-
-*/
-
-package rfslib
+package endusernetwork
 
 import "fmt"
 
@@ -66,7 +56,7 @@ func (e FileMaxLenReachedError) Error() string {
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 // Represents a connection to the RFS system.
-type RFS interface {
+type IEndUserClient interface {
 	// Creates a new empty RFS file with name fname.
 	//
 	// Can return the following errors:
@@ -123,7 +113,7 @@ type RFS interface {
 // This call should only succeed if the connection to the miner
 // succeeds. This call can return the following errors:
 // - Networking errors related to localAddr or minerAddr
-func Initialize(localAddr string, minerAddr string) (rfs RFS, err error) {
+func Initialize(localAddr string, minerAddr string) (rfs IEndUserClient, err error) {
 	// TODO
 	// For now return a DisconnectedError
 	return nil, DisconnectedError(minerAddr)

@@ -1,12 +1,12 @@
 package operationhandler
 
 import (
+	"cfs/models/entity"
+	"cfs/models/message"
+	"cfs/models/modelconst"
+	"cfs/sharedchannel"
 	"fmt"
 	"log"
-	"rfs/models/entity"
-	"rfs/models/message"
-	"rfs/models/modelconst"
-	"rfs/sharedchannel"
 	"sync"
 )
 
@@ -66,19 +66,19 @@ func (OperationHandler *OperationHandler) SetOperationsStatus(operations []*enti
 //Todo: check and resolve concurrancy
 func (operationHandler *OperationHandler) RemoveOperations(operations []*entity.Operation) {
 	for _, op := range operations {
-		operationHandler.sharedchannel.Operation <- message.NewOperationMsg(op, message.REMOVE)
+		operationHandler.sharedchannel.InternalOperationChan <- message.NewOperationMsg(op, message.REMOVE)
 	}
 }
 
 func (operationhandler *OperationHandler) ListenOperationChannel() {
-	for op := range operationhandler.sharedchannel.Operation {
+	for op := range operationhandler.sharedchannel.InternalOperationChan {
 		if op.Command == message.ADD {
 			if !operationhandler.validateOperation(op.Operation) {
 				log.Println("OperationHandler/ListenOperationChannel - invalid operation ", op)
 				continue
 			}
 
-			operationhandler.sharedchannel.BroadcastOperation <- op.Operation
+			operationhandler.sharedchannel.BroadcastOperationChan <- op.Operation
 
 			operationhandler.operations = append(operationhandler.operations, op.Operation)
 

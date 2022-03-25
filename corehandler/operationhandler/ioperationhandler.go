@@ -1,8 +1,8 @@
 package operationhandler
 
 import (
-	"rfs/models/entity"
-	"rfs/models/modelconst"
+	"cfs/models/entity"
+	"cfs/models/modelconst"
 )
 
 type IOperationHandler interface {

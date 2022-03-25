@@ -1,6 +1,6 @@
 package chainhandler
 
-import "rfs/models/entity"
+import "cfs/models/entity"
 
 type IChainHandler interface {
 	GetChain() *entity.BlockChain

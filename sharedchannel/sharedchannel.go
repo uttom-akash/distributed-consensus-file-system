@@ -1,25 +1,25 @@
 package sharedchannel
 
 import (
+	"cfs/models/entity"
+	"cfs/models/message"
 	"fmt"
-	"rfs/models/entity"
-	"rfs/models/message"
 	"sync"
 )
 
 type SharedChannel struct {
-	BroadcastBlock     chan *entity.Block
-	Block              chan *entity.Block
-	BroadcastOperation chan *entity.Operation
-	Operation          chan *message.OperationChanMsg
+	BroadcastBlockChan     chan *entity.Block
+	InternalBlockChan      chan *entity.Block
+	BroadcastOperationChan chan *entity.Operation
+	InternalOperationChan  chan *message.OperationChanMsg
 }
 
 func NewSharedChannel() *SharedChannel {
 	return &SharedChannel{
-		BroadcastBlock:     make(chan *entity.Block, 1),
-		Block:              make(chan *entity.Block, 1),
-		BroadcastOperation: make(chan *entity.Operation, 1),
-		Operation:          make(chan *message.OperationChanMsg, 1),
+		BroadcastBlockChan:     make(chan *entity.Block, 1),
+		InternalBlockChan:      make(chan *entity.Block, 1),
+		BroadcastOperationChan: make(chan *entity.Operation, 1),
+		InternalOperationChan:  make(chan *message.OperationChanMsg, 1),
 	}
 }
 

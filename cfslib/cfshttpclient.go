@@ -1,4 +1,4 @@
-package bclib
+package cfslib
 
 import (
 	"encoding/json"

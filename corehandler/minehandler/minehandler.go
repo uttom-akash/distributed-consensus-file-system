@@ -1,13 +1,13 @@
 package minehandler
 
 import (
+	"cfs/config"
+	"cfs/corehandler/chainhandler"
+	"cfs/corehandler/operationhandler"
+	"cfs/models/entity"
+	"cfs/pow"
+	"cfs/sharedchannel"
 	"fmt"
-	"rfs/config"
-	"rfs/handler/chainhandler"
-	"rfs/handler/operationhandler"
-	"rfs/models/entity"
-	"rfs/pow"
-	"rfs/sharedchannel"
 	"sync"
 	"time"
 )
@@ -82,7 +82,7 @@ func (minerHandler *MinerHandler) generateOpBlock(newOperations []*entity.Operat
 
 	minerHandler.proofOfWork.DoProofWork(newOpBlock, int(minerHandler.config.SettingsConfig.PowPerOpBlock))
 
-	minerHandler.sharedchannel.Block <- newOpBlock
+	minerHandler.sharedchannel.InternalBlockChan <- newOpBlock
 }
 
 func (minerHandler *MinerHandler) generateNoOpBlock(lastblock *entity.Block) {
@@ -91,7 +91,7 @@ func (minerHandler *MinerHandler) generateNoOpBlock(lastblock *entity.Block) {
 
 	minerHandler.proofOfWork.DoProofWork(newNoOpBlock, int(minerHandler.config.SettingsConfig.PowPerNoOpBlock))
 
-	minerHandler.sharedchannel.Block <- newNoOpBlock
+	minerHandler.sharedchannel.InternalBlockChan <- newNoOpBlock
 }
 
 // func (minerHandler *MinerHandler) AddNoOpBlock(ctx context.Context) {

@@ -1,9 +1,9 @@
 package entity
 
 import (
-	"rfs/config"
-	"rfs/models/modelconst"
-	"rfs/secsuit"
+	"cfs/config"
+	"cfs/models/modelconst"
+	"cfs/secsuit"
 	"strconv"
 	"time"
 )

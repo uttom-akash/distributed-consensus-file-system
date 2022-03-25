@@ -1,3 +1,3 @@
-module rfs
+module cfs
 
 go 1.17
