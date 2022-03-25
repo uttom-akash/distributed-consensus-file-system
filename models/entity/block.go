@@ -74,6 +74,7 @@ func CreateGenesisBlock() *Block {
 }
 
 func (block *Block) PowDifficulty() int {
+
 	blockHash := block.Hash()
 	hashLength := len(blockHash)
 	difficulty := 0

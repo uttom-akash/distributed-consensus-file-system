@@ -2,14 +2,14 @@ package peerclient
 
 import (
 	"bytes"
+	"cfs/config"
+	"cfs/corehandler/chainhandler"
+	"cfs/models/entity"
+	"cfs/sharedchannel"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"rfs/config"
-	"rfs/handler/chainhandler"
-	"rfs/models/entity"
-	"rfs/sharedchannel"
 	"sync"
 	"time"
 )

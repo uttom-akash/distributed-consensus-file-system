@@ -1,16 +1,17 @@
 package peerserver
 
 import (
+	"cfs/cfslib"
+	"cfs/config"
+	"cfs/corehandler/chainhandler"
+	"cfs/models/entity"
+	"cfs/models/message"
+	"cfs/sharedchannel"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"rfs/cfslib"
-	"rfs/config"
-	"rfs/handler/chainhandler"
-	"rfs/models/entity"
-	"rfs/models/message"
-	"rfs/sharedchannel"
+
 	"sync"
 )
 

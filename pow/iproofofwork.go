@@ -1,6 +1,6 @@
 package pow
 
-import "rfs/models/entity"
+import "cfs/models/entity"
 
 type IProofOfWork interface {
 	DoProofWork(block *entity.Block, minDifficultyLvl int) int

@@ -61,7 +61,7 @@ func (chain *BlockChain) LastValidBlock() *Block {
 			}
 
 			//Todo : check if strongestBlock null
-			if strongestBlock.PowDifficulty() < chain.BlockHashMapper[currentBlockHash].PowDifficulty() {
+			if strongestBlock == nil || strongestBlock.PowDifficulty() < chain.BlockHashMapper[currentBlockHash].PowDifficulty() {
 				strongestBlock = chain.BlockHashMapper[currentBlockHash]
 			}
 

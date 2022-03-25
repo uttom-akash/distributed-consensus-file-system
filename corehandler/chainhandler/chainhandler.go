@@ -1,6 +1,7 @@
 package chainhandler
 
 import (
+	"cfs/cfslib"
 	"cfs/config"
 	"cfs/corehandler/operationhandler"
 	"cfs/models/entity"
@@ -131,7 +132,7 @@ func (chainhandler *ChainHandler) MargeChain(pChain *entity.BlockChain) {
 
 	log.Println("ChainHandler/MargeChain - In ")
 
-	queue := bclib.NewQueue()
+	queue := cfslib.NewQueue()
 
 	//Todo: Can be improved
 	genesisBlock := chainhandler.chain.GenesisBlock

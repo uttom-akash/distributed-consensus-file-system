@@ -1,11 +1,11 @@
 package pow
 
 import (
+	"cfs/models/entity"
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
 	"log"
-	"rfs/models/entity"
 	"sync"
 )
 
