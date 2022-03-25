@@ -1,4 +1,6 @@
 # concensus-file-system
 
 ## ToDo
-- Test Miner Network
+- Test peer network
+- Test agrement
+- Check stableness 
