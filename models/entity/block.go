@@ -12,7 +12,7 @@ type Block struct {
 	Operations []*Operation
 	MinerID    int
 	Nonce      int
-	TimeStamp  time.Time
+	TimeStamp  int64
 	SerialNo   int
 }
 
@@ -22,7 +22,7 @@ func (block *Block) String() string {
 	str += " " + block.PrevHash
 	str += " " + strconv.Itoa(block.MinerID)
 	str += " " + strconv.Itoa(block.Nonce)
-	str += " " + block.TimeStamp.String()
+	str += " " + strconv.FormatInt(block.TimeStamp, 10)
 	str += " " + strconv.Itoa(block.SerialNo)
 
 	for _, operation := range block.Operations {
@@ -44,7 +44,7 @@ func NewOpBlock(prevblock *Block, operations []*Operation) *Block {
 		PrevHash:   prevblock.Hash(),
 		Operations: operations,
 		MinerID:    config.MinerConfig.MinerId,
-		TimeStamp:  time.Now(),
+		TimeStamp:  time.Now().Unix(),
 		SerialNo:   prevblock.SerialNo + 1,
 	}
 }
@@ -56,7 +56,7 @@ func NewNoOpBlock(prevblock *Block) *Block {
 	return &Block{
 		PrevHash:  prevblock.Hash(),
 		MinerID:   config.MinerConfig.MinerId,
-		TimeStamp: time.Now(),
+		TimeStamp: time.Now().Unix(),
 		SerialNo:  prevblock.SerialNo + 1,
 	}
 }

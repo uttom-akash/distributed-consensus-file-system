@@ -111,10 +111,10 @@ func (syncHandler *SyncHandler) writeChain() {
 	}
 
 	// sanity check
-	fmt.Println("SyncHandler/write - ", string(jsonData))
+	log.Println("SyncHandler/write - ", string(jsonData))
 
 	jsonFile.Write(jsonData)
 	jsonFile.Close()
 
-	fmt.Println("SyncHandler/write - JSON data written to ", jsonFile.Name())
+	log.Println("SyncHandler/write - JSON data written to ", jsonFile.Name())
 }

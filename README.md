@@ -1,4 +1,4 @@
-# concensus-file-system
+# Consensus File System
 
 ## Todo
 - Test peer network

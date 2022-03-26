@@ -14,7 +14,7 @@ type Operation struct {
 	OperationType modelconst.OperationType
 	Record        [512]byte
 	MinerID       int
-	TimeStamp     time.Time
+	TimeStamp     int64
 }
 
 func NewOperation(fname string, operationType modelconst.OperationType, record []byte) *Operation {
@@ -30,7 +30,7 @@ func NewOperation(fname string, operationType modelconst.OperationType, record [
 		OperationType: operationType,
 		Record:        record512,
 		MinerID:       minerId,
-		TimeStamp:     time.Now(),
+		TimeStamp:     time.Now().Unix(),
 	}
 }
 
@@ -42,7 +42,7 @@ func (op *Operation) String() string {
 	str += " " + op.OperationType.String()
 	str += " " + string(op.Record[:])
 	str += " " + strconv.Itoa(op.MinerID)
-	str += " " + op.TimeStamp.String()
+	str += " " + strconv.FormatInt(op.TimeStamp, 10)
 
 	return str
 }
