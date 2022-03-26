@@ -11,7 +11,6 @@ import (
 	"log"
 	"net/http"
 	"sync"
-	"time"
 )
 
 type PeerClientHandler struct {
@@ -73,8 +72,6 @@ func (handler *PeerClientHandler) DownloadChain() {
 		handler.chainHandler.MargeChain(chain)
 
 		log.Println("Success: Downloading from peer : ", peerId)
-
-		time.Sleep(3 * time.Second)
 	}
 
 }
@@ -105,8 +102,6 @@ func (handler *PeerClientHandler) DisseminateOperations() {
 			}
 
 			log.Println("PeerClientHandler/DisseminateOperations - dissemination success ", resp.StatusCode)
-
-			time.Sleep(3 * time.Second)
 		}
 	}
 
@@ -140,8 +135,6 @@ func (handler *PeerClientHandler) DisseminateBlocks() {
 			}
 
 			log.Println("PeerClientHandler/DisseminateBlocks - dissemination success ", resp.StatusCode)
-
-			time.Sleep(3 * time.Second)
 		}
 	}
 

@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"cfs/cfslib"
 	"cfs/config"
 	"cfs/secsuit"
 	"strconv"
@@ -39,8 +38,6 @@ func (block *Block) Hash() string {
 
 func NewOpBlock(prevblock *Block, operations []*Operation) *Block {
 
-	time.Sleep(time.Duration(cfslib.Random(4, 5)) * time.Minute)
-
 	config := config.GetSingletonConfigHandler()
 
 	return &Block{
@@ -53,8 +50,6 @@ func NewOpBlock(prevblock *Block, operations []*Operation) *Block {
 }
 
 func NewNoOpBlock(prevblock *Block) *Block {
-
-	time.Sleep(time.Duration(cfslib.Random(2, 3)) * time.Minute)
 
 	config := config.GetSingletonConfigHandler()
 

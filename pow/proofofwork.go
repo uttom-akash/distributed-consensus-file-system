@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"sync"
+	"time"
 )
 
 type ProofOfWork struct {
@@ -40,19 +41,29 @@ func NewSingletonProofOfWorkHandler() IProofOfWork {
 }
 
 func (workproof ProofOfWork) DoProofWork(block *entity.Block, minDifficultyLvl int) int {
+	log.Println("ProofOfWork/DoProofWork - Inside with minimum difficulty level: ", minDifficultyLvl)
+
 	nonce := 0
+	bfore := time.Now()
 
 	for {
 		block.Nonce = nonce
 		difficultyLevel := block.PowDifficulty()
 
-		log.Println("ProofOfWork/DoProofWork- nonce: ", nonce, " -difficulty level: ", difficultyLevel, " -minimum difficulty level: ", minDifficultyLvl)
+		//log.Println("ProofOfWork/DoProofWork- nonce: ", nonce, " -difficulty level: ", difficultyLevel, " -minimum difficulty level: ", minDifficultyLvl)
 
 		if difficultyLevel >= minDifficultyLvl {
 			break
 		}
 		nonce++
 	}
+
+	log.Println("ProofOfWork/DoProofWork -nonce: ", nonce, " -minimum difficulty level: ", minDifficultyLvl, "- hash: ", block.Hash())
+	log.Println("ProofOfWork/DoProofWork -End with duration: ", time.Since(bfore))
+
+	// if minDifficultyLvl == 5 {
+	// 	os.Exit(1)
+	// }
 
 	return nonce
 }

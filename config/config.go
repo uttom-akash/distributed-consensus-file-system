@@ -54,6 +54,7 @@ var configs = []MinerConfig{
 		MinerId:   4,
 		IpAddress: "127.0.0.1",
 		Port:      "8083",
+		Peers:     []int{1},
 	},
 }
 
@@ -114,10 +115,10 @@ func GetSettingsConfig() SettingsConfig {
 		MinedCoinsPerOpBlock:   3,
 		MinedCoinsPerNoOpBlock: 3,
 		NumCoinsPerFileCreate:  2,
-		GenOpBlockTimeout:      3,
+		GenOpBlockTimeout:      5,
 		GenesisBlockHash:       "",
-		PowPerOpBlock:          1,
-		PowPerNoOpBlock:        0,
+		PowPerOpBlock:          5,
+		PowPerNoOpBlock:        5,
 		ConfirmsPerFileCreate:  3,
 		ConfirmsPerFileAppend:  5,
 	}
