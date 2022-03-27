@@ -86,20 +86,20 @@ func (chainhandler *ChainHandler) AddBlock() error {
 
 		log.Println("ChainHandler/AddBlock - successfully validated block ", block)
 
-		chainhandler.operationHandler.SetOperationsStatus(block.Operations, modelconst.PENDING)
-
-		operationsTobeRemoved := chainhandler.GetOperationsTobeRemoved(block)
-		chainhandler.operationHandler.RemoveOperations(operationsTobeRemoved)
-
-		// operationsTobeConfirmed := chainhandler.GetOperationsTobeConfirmed(block) //Todo: notify client
-
-		// chainhandler.operationHandler.SetOperationsStatus(operationsTobeConfirmed, modelconst.CONFIRMED)
-
 		chainhandler.chain.AddBlock(block)
 
 		chainhandler.sharedchannel.BroadcastBlockChan <- block
 
 		log.Println("ChainHandler/AddBlock - successfully added block ", block)
+
+		operationsTobeRemoved := chainhandler.GetOperationsTobeRemoved(block)
+		chainhandler.operationHandler.RemoveOperations(operationsTobeRemoved)
+
+		log.Println("ChainHandler/AddBlock - successfully removed operations")
+
+		chainhandler.PushConfirmedOperations(block) //Todo: notify client
+
+		log.Println("ChainHandler/AddBlock - successfully push confirmed operations")
 	}
 
 	return nil
@@ -153,13 +153,11 @@ func (chainhandler *ChainHandler) MargeChain(pChain *entity.BlockChain) {
 	log.Println("ChainHandler/MargeChain - Out ")
 }
 
-func (chainhandler *ChainHandler) GetOperationsTobeConfirmed(block *entity.Block) []*entity.Operation {
+func (chainhandler *ChainHandler) PushConfirmedOperations(block *entity.Block) {
 
 	log.Println("ChainHandler/GetOperationsTobeConfirmed - In ")
 
 	config := config.GetSingletonConfigHandler()
-
-	var operations []*entity.Operation
 
 	iterator := block
 	hasParent := true
@@ -168,16 +166,16 @@ func (chainhandler *ChainHandler) GetOperationsTobeConfirmed(block *entity.Block
 
 		if i == int(config.SettingsConfig.ConfirmsPerFileAppend) {
 			for _, o := range iterator.Operations {
-				if o.OperationType == modelconst.APPEND_RECORD {
-					operations = append(operations, o)
+				if o.OperationType == modelconst.APPEND_RECORD && o.MinerID == config.ConsoleConfig.MinerId {
+					chainhandler.sharedchannel.ConfirmedOperationChan <- o
 				}
 			}
 		}
 
 		if i == int(config.SettingsConfig.ConfirmsPerFileAppend) {
 			for _, o := range iterator.Operations {
-				if o.OperationType == modelconst.CREATE_FILE {
-					operations = append(operations, o)
+				if o.OperationType == modelconst.CREATE_FILE && o.MinerID == config.ConsoleConfig.MinerId {
+					chainhandler.sharedchannel.ConfirmedOperationChan <- o
 				}
 			}
 		}
@@ -186,8 +184,6 @@ func (chainhandler *ChainHandler) GetOperationsTobeConfirmed(block *entity.Block
 	}
 
 	log.Println("ChainHandler/GetOperationsTobeConfirmed - Out ")
-
-	return operations
 }
 
 func (chainhandler *ChainHandler) GetOperationsTobeRemoved(block *entity.Block) []*entity.Operation {
@@ -197,15 +193,15 @@ func (chainhandler *ChainHandler) GetOperationsTobeRemoved(block *entity.Block) 
 	config := config.GetSingletonConfigHandler()
 	numberOfblockToCheck := int(math.Max(float64(config.SettingsConfig.ConfirmsPerFileCreate), float64(config.SettingsConfig.ConfirmsPerFileAppend)))
 
-	var operations []*entity.Operation
+	var operationsTobeRemoved []*entity.Operation
 
 	blockInLongestChain := chainhandler.chain.LastValidBlock()
 	iterator := block
 	hasParent := true
 
-	if blockInLongestChain.Hash() == block.PrevHash {
+	if blockInLongestChain.Hash() == block.Hash() {
 		for i := 0; i <= numberOfblockToCheck && hasParent; i++ {
-			operations = append(operations, iterator.Operations...)
+			operationsTobeRemoved = append(operationsTobeRemoved, iterator.Operations...)
 
 			iterator, hasParent = chainhandler.chain.BlockHashMapper[iterator.PrevHash]
 		}
@@ -213,5 +209,5 @@ func (chainhandler *ChainHandler) GetOperationsTobeRemoved(block *entity.Block) 
 
 	log.Println("ChainHandler/GetOperationsTobeRemoved - Out ")
 
-	return operations
+	return operationsTobeRemoved
 }

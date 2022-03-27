@@ -12,6 +12,7 @@ type SharedChannel struct {
 	InternalBlockChan      chan *entity.Block
 	BroadcastOperationChan chan *entity.Operation
 	InternalOperationChan  chan *message.OperationChanMsg
+	ConfirmedOperationChan chan *entity.Operation
 }
 
 func NewSharedChannel() *SharedChannel {
@@ -20,6 +21,7 @@ func NewSharedChannel() *SharedChannel {
 		InternalBlockChan:      make(chan *entity.Block, 1),
 		BroadcastOperationChan: make(chan *entity.Operation, 1),
 		InternalOperationChan:  make(chan *message.OperationChanMsg, 1),
+		ConfirmedOperationChan: make(chan *entity.Operation, 2), //Todo : make buffer size 1 later
 	}
 }
 

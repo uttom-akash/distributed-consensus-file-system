@@ -12,7 +12,7 @@ const createTreeData = (blockTree) => {
   if (!!!blockTree) return [];
 
   //Need to parse from genesis from block
-  let genesisBlockHash = "a22a2cd1181b6e7f51f50f911de7bd5d";
+  let genesisBlockHash = "52e2f1a396aa5e1477e3e127ae5d52b4";
 
   let pblock = createNode(genesisBlockHash);
   let treeData = [pblock];
@@ -52,6 +52,7 @@ export default function ChainTree({ blockTree, OnSelectBlock }) {
 
   return (
     <Tree
+      defaultExpandAll={true}
       showLine
       defaultExpandedKeys={["0-0-0"]}
       onSelect={onSelect}
