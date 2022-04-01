@@ -61,11 +61,11 @@ func main() {
 
 	go func() {
 		time.Sleep(time.Duration(cfslib.Random(1, 10)) * time.Minute)
-		sharedchannel.InternalOperationChan <- message.NewOperationMsg(entity.NewOperation("first.txt", modelconst.CREATE_FILE, nil), message.ADD)
+		sharedchannel.InternalOperationChannel <- message.NewOperationMsg(entity.NewOperation("first.txt", modelconst.CREATE_FILE, nil), message.ADD)
 	}()
 	go func() {
 		time.Sleep(time.Duration(cfslib.Random(10, 20)) * time.Minute)
-		sharedchannel.InternalOperationChan <- message.NewOperationMsg(entity.NewOperation("first.txt", modelconst.APPEND_RECORD, []byte("Append please")), message.ADD)
+		sharedchannel.InternalOperationChannel <- message.NewOperationMsg(entity.NewOperation("first.txt", modelconst.APPEND_RECORD, []byte("Append please")), message.ADD)
 	}()
 
 	synchandler := synchandler.NewSingletonSyncHandler()

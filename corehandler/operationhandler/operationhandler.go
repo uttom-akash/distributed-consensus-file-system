@@ -66,19 +66,19 @@ func (OperationHandler *OperationHandler) SetOperationsStatus(operations []*enti
 //Todo: check and resolve concurrancy
 func (operationHandler *OperationHandler) RemoveOperations(operations []*entity.Operation) {
 	for _, op := range operations {
-		operationHandler.sharedchannel.InternalOperationChan <- message.NewOperationMsg(op, message.REMOVE)
+		operationHandler.sharedchannel.InternalOperationChannel <- message.NewOperationMsg(op, message.REMOVE)
 	}
 }
 
 func (operationhandler *OperationHandler) ListenOperationChannel() {
-	for op := range operationhandler.sharedchannel.InternalOperationChan {
+	for op := range operationhandler.sharedchannel.InternalOperationChannel {
 		if op.Command == message.ADD {
 			if !operationhandler.validateOperation(op.Operation) {
 				log.Println("OperationHandler/ListenOperationChannel - invalid operation ", op)
 				continue
 			}
 
-			operationhandler.sharedchannel.BroadcastOperationChan <- op.Operation
+			operationhandler.sharedchannel.BroadcastOperationChannel <- op.Operation
 
 			operationhandler.operations = append(operationhandler.operations, op.Operation)
 

@@ -73,7 +73,7 @@ func (chainhandler *ChainHandler) GetLongestValidChain() *entity.Block {
 func (chainhandler *ChainHandler) AddBlock() error {
 	log.Println("ChainHandler/AddBlock - In")
 
-	for block := range chainhandler.sharedchannel.InternalBlockChan {
+	for block := range chainhandler.sharedchannel.InternalBlockChannel {
 
 		log.Println("ChainHandler/AddBlock - Processing block", block)
 
@@ -88,7 +88,7 @@ func (chainhandler *ChainHandler) AddBlock() error {
 
 		chainhandler.chain.AddBlock(block)
 
-		chainhandler.sharedchannel.BroadcastBlockChan <- block
+		chainhandler.sharedchannel.BroadcastBlockChannel <- block
 
 		log.Println("ChainHandler/AddBlock - successfully added block ", block)
 
@@ -143,7 +143,7 @@ func (chainhandler *ChainHandler) MargeChain(pChain *entity.BlockChain) {
 		currentBlockHash := queue.Front().(string)
 		queue.Pop()
 
-		chainhandler.sharedchannel.InternalBlockChan <- pChain.BlockHashMapper[currentBlockHash]
+		chainhandler.sharedchannel.InternalBlockChannel <- pChain.BlockHashMapper[currentBlockHash]
 
 		for _, childBlock := range pChain.BlockTree[currentBlockHash] {
 			queue.Push(childBlock)
@@ -167,7 +167,7 @@ func (chainhandler *ChainHandler) PushConfirmedOperations(block *entity.Block) {
 		if i == int(config.SettingsConfig.ConfirmsPerFileAppend) {
 			for _, o := range iterator.Operations {
 				if o.OperationType == modelconst.APPEND_RECORD && o.MinerID == config.ConsoleConfig.MinerId {
-					chainhandler.sharedchannel.ConfirmedOperationChan <- o
+					chainhandler.sharedchannel.ConfirmedOperationChannel <- o
 				}
 			}
 		}
@@ -175,7 +175,7 @@ func (chainhandler *ChainHandler) PushConfirmedOperations(block *entity.Block) {
 		if i == int(config.SettingsConfig.ConfirmsPerFileAppend) {
 			for _, o := range iterator.Operations {
 				if o.OperationType == modelconst.CREATE_FILE && o.MinerID == config.ConsoleConfig.MinerId {
-					chainhandler.sharedchannel.ConfirmedOperationChan <- o
+					chainhandler.sharedchannel.ConfirmedOperationChannel <- o
 				}
 			}
 		}

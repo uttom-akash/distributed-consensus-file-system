@@ -82,7 +82,7 @@ func (minerHandler *MinerHandler) generateOpBlock(newOperations []*entity.Operat
 
 	minerHandler.proofOfWork.DoProofWork(newOpBlock, int(minerHandler.config.SettingsConfig.PowPerOpBlock))
 
-	minerHandler.sharedchannel.InternalBlockChan <- newOpBlock
+	minerHandler.sharedchannel.InternalBlockChannel <- newOpBlock
 }
 
 func (minerHandler *MinerHandler) generateNoOpBlock(lastblock *entity.Block) {
@@ -91,7 +91,7 @@ func (minerHandler *MinerHandler) generateNoOpBlock(lastblock *entity.Block) {
 
 	minerHandler.proofOfWork.DoProofWork(newNoOpBlock, int(minerHandler.config.SettingsConfig.PowPerNoOpBlock))
 
-	minerHandler.sharedchannel.InternalBlockChan <- newNoOpBlock
+	minerHandler.sharedchannel.InternalBlockChannel <- newNoOpBlock
 }
 
 // func (minerHandler *MinerHandler) AddNoOpBlock(ctx context.Context) {

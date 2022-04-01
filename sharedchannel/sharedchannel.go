@@ -8,20 +8,22 @@ import (
 )
 
 type SharedChannel struct {
-	BroadcastBlockChan     chan *entity.Block
-	InternalBlockChan      chan *entity.Block
-	BroadcastOperationChan chan *entity.Operation
-	InternalOperationChan  chan *message.OperationChanMsg
-	ConfirmedOperationChan chan *entity.Operation
+	BroadcastBlockChannel       chan *entity.Block
+	InternalBlockChannel        chan *entity.Block
+	BroadcastOperationChannel   chan *entity.Operation
+	InternalOperationChannel    chan *message.OperationChanMsg
+	ConfirmedOperationChannel   chan *entity.Operation
+	ClientOperationQueueChannel chan *entity.Operation
 }
 
 func NewSharedChannel() *SharedChannel {
 	return &SharedChannel{
-		BroadcastBlockChan:     make(chan *entity.Block, 1),
-		InternalBlockChan:      make(chan *entity.Block, 1),
-		BroadcastOperationChan: make(chan *entity.Operation, 1),
-		InternalOperationChan:  make(chan *message.OperationChanMsg, 1),
-		ConfirmedOperationChan: make(chan *entity.Operation, 2), //Todo : make buffer size 1 later
+		BroadcastBlockChannel:       make(chan *entity.Block, 1),
+		InternalBlockChannel:        make(chan *entity.Block, 1),
+		BroadcastOperationChannel:   make(chan *entity.Operation, 1),
+		InternalOperationChannel:    make(chan *message.OperationChanMsg, 1),
+		ConfirmedOperationChannel:   make(chan *entity.Operation, 2), //Todo : make buffer size 1 later
+		ClientOperationQueueChannel: make(chan *entity.Operation, 5),
 	}
 }
 

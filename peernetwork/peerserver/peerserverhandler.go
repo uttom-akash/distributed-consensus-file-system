@@ -104,7 +104,7 @@ func (handler *PeerServerHandler) listenOperation(rw http.ResponseWriter, req *h
 		log.Fatalf("PeerServerHandler/ListenOperation - error decoding operation: %s", decodedErr)
 	}
 
-	handler.sharedchannel.InternalOperationChan <- message.NewOperationMsg(operation, message.ADD)
+	handler.sharedchannel.InternalOperationChannel <- message.NewOperationMsg(operation, message.ADD)
 
 	log.Println("PeerServerHandler/ListenOperation - operation is added to channel $handler.minerHandler.AddNewOperation$")
 
@@ -124,7 +124,7 @@ func (handler *PeerServerHandler) listenBlock(rw http.ResponseWriter, req *http.
 		log.Fatalf("PeerServerHandler/ListenBlock - error decoding block: %s", decodedErr)
 	}
 
-	handler.sharedchannel.InternalBlockChan <- block
+	handler.sharedchannel.InternalBlockChannel <- block
 
 	log.Println("PeerServerHandler/ListenBlock - block is added to channel $handler.chainHandler.Addblockchan$")
 

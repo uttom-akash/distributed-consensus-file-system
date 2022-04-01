@@ -81,7 +81,7 @@ func (handler *PeerClientHandler) DisseminateOperations() {
 
 	con := config.GetSingletonConfigHandler()
 
-	for operation := range handler.sharedchannel.BroadcastOperationChan {
+	for operation := range handler.sharedchannel.BroadcastOperationChannel {
 		for _, peerId := range con.MinerConfig.Peers {
 
 			log.Println("PeerClientHandler/DisseminateOperations - disseminating to ", peerId, "; operation : ", operation)
@@ -114,7 +114,7 @@ func (handler *PeerClientHandler) DisseminateBlocks() {
 
 	con := config.GetSingletonConfigHandler()
 
-	for block := range handler.sharedchannel.BroadcastBlockChan {
+	for block := range handler.sharedchannel.BroadcastBlockChannel {
 		for _, peerId := range con.MinerConfig.Peers {
 
 			log.Println("PeerClientHandler/DisseminateBlocks - disseminating to ", peerId, "; block : ", block)

@@ -14,6 +14,7 @@ type Block struct {
 	Nonce      int
 	TimeStamp  int64
 	SerialNo   int
+	MinedCoins uint8
 }
 
 func (block *Block) String() string {
@@ -24,6 +25,7 @@ func (block *Block) String() string {
 	str += " " + strconv.Itoa(block.Nonce)
 	str += " " + strconv.FormatInt(block.TimeStamp, 10)
 	str += " " + strconv.Itoa(block.SerialNo)
+	str += " " + strconv.Itoa(int(block.MinedCoins))
 
 	for _, operation := range block.Operations {
 		str += " " + operation.String()
@@ -46,6 +48,7 @@ func NewOpBlock(prevblock *Block, operations []*Operation) *Block {
 		MinerID:    config.MinerConfig.MinerId,
 		TimeStamp:  time.Now().Unix(),
 		SerialNo:   prevblock.SerialNo + 1,
+		MinedCoins: config.SettingsConfig.MinedCoinsPerOpBlock,
 	}
 }
 
@@ -54,10 +57,11 @@ func NewNoOpBlock(prevblock *Block) *Block {
 	config := config.GetSingletonConfigHandler()
 
 	return &Block{
-		PrevHash:  prevblock.Hash(),
-		MinerID:   config.MinerConfig.MinerId,
-		TimeStamp: time.Now().Unix(),
-		SerialNo:  prevblock.SerialNo + 1,
+		PrevHash:   prevblock.Hash(),
+		MinerID:    config.MinerConfig.MinerId,
+		TimeStamp:  time.Now().Unix(),
+		SerialNo:   prevblock.SerialNo + 1,
+		MinedCoins: config.SettingsConfig.MinedCoinsPerNoOpBlock,
 	}
 }
 
