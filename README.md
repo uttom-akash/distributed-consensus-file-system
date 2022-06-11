@@ -1,14 +1,10 @@
 # Consensus File System
 
-## Todo
-- Test peer network
-- Test agrement
-- Check stableness 
+Descriptions: A Consensus file system comprises miners and clients (end-user).
 
-## Minor todo
-- implement serializer-deserializer wrapper for json
-- implement wrapper to construct url from config
-
-
-## UI todo
-- make realtime ui
+*Features:*
+  - Clients submit the operations on file to their connected miners using CFS lib.
+  - Miners broadcast operations that are submitted by the clients to the rest of the miner network.
+  - Miners also help other miners with their operation dissemination.
+  - Miners generate blocks for the blockchain by solving the proof of work and some number of coins is credited on confirmation of the block.
+  - Miner disseminates valid blocks which are mined locally or by the other miners. 
