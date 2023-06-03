@@ -1,6 +1,6 @@
-# Consensus File System
+### Consensus File System
 
-Descriptions: A Consensus file system comprises miners and clients (end-user).
+A Consensus file system comprises miners and clients (end-user).
 
 *Features:*
   - Clients submit the operations on file to their connected miners using CFS lib.
