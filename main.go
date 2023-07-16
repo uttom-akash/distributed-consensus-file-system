@@ -40,29 +40,14 @@ func main() {
 
 	config.NewSingletonConfigHandler(config.ConsoleArg{MinerId: *minerId})
 
-	// b1 := entity.NewOpBlock(entity.CreateGenesisBlock(), []*entity.Operation{entity.NewOperation("first.txt", modelconst.CREATE_FILE, nil), entity.NewOperation("first.txt", modelconst.APPEND_RECORD, []byte("Append please"))})
-	// b2 := new(entity.Block)
-
-	// encoded, _ := json.Marshal(b1)
-	// err := json.Unmarshal(encoded, b2)
-	// fmt.Print(err)
-
-	// t1 := b1.TimeStamp
-	// t2 := b2.TimeStamp
-
-	// h1 := b1.Hash()
-	// h2 := b2.Hash()
-
-	// if h1 == h2 {
-	// 	fmt.Println("equal", t1, t2)
-	// }
-
 	sharedchannel := sharedchannel.NewSingletonSharedChannel()
 
+	//Todo: remove once testing is done
 	go func() {
 		time.Sleep(time.Duration(cfslib.Random(1, 10)) * time.Minute)
 		sharedchannel.InternalOperationChannel <- message.NewOperationMsg(entity.NewOperation("first.txt", modelconst.CREATE_FILE, nil), message.ADD)
 	}()
+	//Todo: remove once testing is done
 	go func() {
 		time.Sleep(time.Duration(cfslib.Random(10, 20)) * time.Minute)
 		sharedchannel.InternalOperationChannel <- message.NewOperationMsg(entity.NewOperation("first.txt", modelconst.APPEND_RECORD, []byte("Append please")), message.ADD)
