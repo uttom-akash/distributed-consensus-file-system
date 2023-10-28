@@ -10,6 +10,7 @@ type MinerConfig struct {
 	MinerId             int
 	IpAddress           string //Todo : IncomingMinersAddr ip:port
 	Port                string
+	EndUserNetworkPort  string
 	Peers               []int
 	OutgoingMinersIP    string
 	IncomingClientsAddr string
@@ -23,7 +24,7 @@ type SettingsConfig struct {
 	MinedCoinsPerOpBlock   uint8  // The number of record coins mined for an op block
 	MinedCoinsPerNoOpBlock uint8  // The number of record coins mined for a no-op block
 	NumCoinsPerFileCreate  uint8  // The number of record coins charged for creating a file
-	GenOpBlockTimeout      uint8  // Time in milliseconds, the minimum time between op block mining (see diagram above).
+	GenOpBlockTimeout      uint8  // Time in milliseconds, the minimum time between op block mining.
 	GenesisBlockHash       string // The genesis (first) block MD5 hash for this blockchain
 	PowPerOpBlock          uint8  // The op block difficulty (proof of work setting: number of zeroes)
 	PowPerNoOpBlock        uint8  // The no-op block difficulty (proof of work setting: number of zeroes)
@@ -33,28 +34,32 @@ type SettingsConfig struct {
 
 var configs = []MinerConfig{
 	{
-		MinerId:   1,
-		IpAddress: "127.0.0.1",
-		Port:      "8080",
-		Peers:     []int{2, 3},
+		MinerId:            1,
+		IpAddress:          "127.0.0.1",
+		Port:               "8080",
+		EndUserNetworkPort: "8090",
+		Peers:              []int{2, 3},
 	},
 	{
-		MinerId:   2,
-		IpAddress: "127.0.0.1",
-		Port:      "8081",
-		Peers:     []int{3, 4},
+		MinerId:            2,
+		IpAddress:          "127.0.0.1",
+		Port:               "8081",
+		EndUserNetworkPort: "8091",
+		Peers:              []int{3, 4},
 	},
 	{
-		MinerId:   3,
-		IpAddress: "127.0.0.1",
-		Port:      "8082",
-		Peers:     []int{4, 1},
+		MinerId:            3,
+		IpAddress:          "127.0.0.1",
+		Port:               "8082",
+		EndUserNetworkPort: "8092",
+		Peers:              []int{4, 1},
 	},
 	{
-		MinerId:   4,
-		IpAddress: "127.0.0.1",
-		Port:      "8083",
-		Peers:     []int{1},
+		MinerId:            4,
+		IpAddress:          "127.0.0.1",
+		Port:               "8083",
+		EndUserNetworkPort: "8093",
+		Peers:              []int{1},
 	},
 }
 

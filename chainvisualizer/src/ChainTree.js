@@ -12,7 +12,7 @@ const createTreeData = (blockTree) => {
   if (!!!blockTree) return [];
 
   //Need to parse from genesis from block
-  let genesisBlockHash = "52e2f1a396aa5e1477e3e127ae5d52b4";
+  let genesisBlockHash = "5377672918f1bb6453dc3417e22966a0";
 
   let pblock = createNode(genesisBlockHash);
   let treeData = [pblock];

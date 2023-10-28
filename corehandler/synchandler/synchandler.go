@@ -5,6 +5,7 @@ import (
 	"cfs/corehandler/chainhandler"
 	"cfs/corehandler/minehandler"
 	"cfs/corehandler/operationhandler"
+	"cfs/endusernetwork"
 	"cfs/peernetwork/peerclient"
 	"cfs/peernetwork/peerserver"
 	"encoding/json"
@@ -22,6 +23,7 @@ type SyncHandler struct {
 	operationhandler      operationhandler.IOperationHandler
 	peerhandler           peerserver.IPeerServerHandler
 	minerNetworkOperation peerclient.IPeerClientHandler
+	endUserServer         endusernetwork.IEndUserServer
 }
 
 func (syncHandler *SyncHandler) Sync() {
@@ -40,6 +42,8 @@ func (syncHandler *SyncHandler) Sync() {
 
 	go syncHandler.mineHandler.MineBlock()
 
+	go syncHandler.endUserServer.Serve()
+
 	syncHandler.shutdownOnInterrupt()
 }
 
@@ -53,6 +57,7 @@ func NewSyncHandler() ISyncHandler {
 		operationhandler:      operationhandler.NewSingletonOperationHandler(),
 		peerhandler:           peerserver.NewSingletonPeerServerHandler(),
 		minerNetworkOperation: peerclient.NewSingletonPeerClientHandler(),
+		endUserServer:         endusernetwork.NewPeerServerHandler(),
 	}
 }
 
