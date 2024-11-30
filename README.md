@@ -36,6 +36,7 @@ The **Consensus File System (CFS)** is a decentralized file system that leverage
                       +-----------------------+  
 
 
+```
 
 ## How It Works
 
@@ -56,7 +57,8 @@ Valid blocks are propagated across the network to maintain a consistent blockcha
 ## Getting Started
 
 
-   ```bash
-   git clone https://github.com/your-repo/consensus-file-system.git
-   cd consensus-file-system
-   go run main.go
+ ```bash
+ git clone https://github.com/your-repo/consensus-file-system.git
+ cd consensus-file-system
+ go run main.go
+```
